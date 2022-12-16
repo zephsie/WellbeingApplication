@@ -1,6 +1,6 @@
 package com.zephsie.wellbeing.dtos;
 
-import com.zephsie.wellbeing.configs.security.password.ValidPassword;
+import com.zephsie.wellbeing.security.password.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,12 +1,12 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.zephsie.wellbeing.configs.security.UserDetailsImp;
+import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
-import com.zephsie.wellbeing.utils.converters.UserDTOConverter;
+import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
 import com.zephsie.wellbeing.utils.views.UserView;
@@ -28,10 +28,10 @@ public class UserController {
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
-    private final UserDTOConverter userDTOConverter;
+    private final IEntityDTOConverter<User, UserDTO> userDTOConverter;
 
     @Autowired
-    public UserController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, UserDTOConverter userDTOConverter) {
+    public UserController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, IEntityDTOConverter<User, UserDTO> userDTOConverter) {
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
         this.userDTOConverter = userDTOConverter;

@@ -3,8 +3,8 @@ package com.zephsie.wellbeing.models.entity;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.zephsie.wellbeing.utils.converters.CustomLocalDateTimeDesSerializer;
-import com.zephsie.wellbeing.utils.converters.CustomLocalDateTimeSerializer;
+import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeDesSerializer;
+import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeSerializer;
 import com.zephsie.wellbeing.utils.views.UserView;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,6 +68,7 @@ public class User {
     @Version
     @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
+    @JsonView(UserView.Min.class)
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @Getter

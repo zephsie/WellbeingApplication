@@ -1,4 +1,4 @@
-package com.zephsie.wellbeing.configs.security.password;
+package com.zephsie.wellbeing.security.password;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

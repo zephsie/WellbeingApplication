@@ -1,4 +1,4 @@
-package com.zephsie.wellbeing.configs.security;
+package com.zephsie.wellbeing.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zephsie.wellbeing.services.entity.UserDetailsServiceImpl;
@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -53,8 +54,8 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (username == null || SecurityContextHolder.getContext().getAuthentication() != null) {
-            sendError(response, "Username is missing");
+        if (username == null) {
+            sendError(response, "Could not extract username from token");
             return;
         }
 
@@ -62,17 +63,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             userDetails = userDetailsService.loadUserByUsername(username);
-        } catch (Exception e) {
+        } catch (UsernameNotFoundException e) {
             sendError(response, "User with " + username + " does not exist");
             return;
         }
 
         if (!jwtUtil.validateToken(jwt, userDetails)) {
             sendError(response, "Token is invalid");
-        }
-
-        if (!userDetails.isEnabled()) {
-            sendError(response, "User is disabled");
             return;
         }
 

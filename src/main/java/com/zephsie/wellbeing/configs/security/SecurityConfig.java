@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.configs.security;
 
+import com.zephsie.wellbeing.security.jwt.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

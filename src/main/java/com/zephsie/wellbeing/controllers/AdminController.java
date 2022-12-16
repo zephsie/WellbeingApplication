@@ -5,12 +5,13 @@ import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
+import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.views.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -27,13 +28,24 @@ public class AdminController {
     }
 
     @PutMapping("/{id}/role/{role}/version/{version}")
-    public ResponseEntity<Void> updateRole(@PathVariable("id") long id,
+    public ResponseEntity<User> updateRole(@PathVariable("id") long id,
                                            @PathVariable("role") String role,
                                            @PathVariable("version") long version) {
 
-        userService.updateRole(id, role, unixTimeToLocalDateTimeConverter.convert(version));
+        return ResponseEntity.ok(userService.updateRole(id, role, unixTimeToLocalDateTimeConverter.convert(version)));
+    }
 
-        return ResponseEntity.ok().build();
+    @GetMapping("/{id}")
+    @JsonView(UserView.Min.class)
+    public ResponseEntity<User> read(@PathVariable("id") long id) {
+
+        Optional<User> user = userService.read(id);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("User with id " + id + " not found");
+        }
+
+        return ResponseEntity.ok(user.get());
     }
 
     @GetMapping

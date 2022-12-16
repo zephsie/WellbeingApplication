@@ -49,11 +49,7 @@ public class UserService implements IUserService {
     public void update(Long id, User user, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
-        if (optionalPerson.isEmpty()) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-
-        User existingUser = optionalPerson.get();
+        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
         if (!existingUser.getVersion().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
@@ -75,11 +71,7 @@ public class UserService implements IUserService {
     public void delete(Long id, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
-        if (optionalPerson.isEmpty()) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-
-        User existingUser = optionalPerson.get();
+        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
         if (!existingUser.getVersion().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
@@ -90,18 +82,14 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void updateRole(Long id, String role, LocalDateTime version) {
+    public User updateRole(Long id, String role, LocalDateTime version) {
         if (!roles.contains(role)) {
             throw new IllegalArgumentException("Role " + role + " is not supported");
         }
 
         Optional<User> optionalPerson = userRepository.findById(id);
 
-        if (optionalPerson.isEmpty()) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-
-        User existingUser = optionalPerson.get();
+        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
         if (!existingUser.getVersion().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
@@ -110,5 +98,7 @@ public class UserService implements IUserService {
         existingUser.setRole(role);
 
         userRepository.save(existingUser);
+
+        return existingUser;
     }
 }

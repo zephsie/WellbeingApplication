@@ -1,4 +1,4 @@
-package com.zephsie.wellbeing.configs.security;
+package com.zephsie.wellbeing.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -45,7 +45,7 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        return (extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token) && userDetails.isEnabled());
     }
 
     public String extractUsername(String token) {

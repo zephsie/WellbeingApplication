@@ -1,11 +1,10 @@
 package com.zephsie.wellbeing.models.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "verification_token", schema = "structure",
@@ -30,6 +29,7 @@ public class VerificationToken {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
+    @NotEmpty(message = "Token cannot be empty")
     private String token;
   
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
@@ -37,12 +37,6 @@ public class VerificationToken {
     @Getter
     @Setter
     private User user;
-
-    @Version
-    @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
-    @Access(AccessType.FIELD)
-    @Getter
-    private LocalDateTime version;
 
     public VerificationToken(String token, User user) {
         this.token = token;

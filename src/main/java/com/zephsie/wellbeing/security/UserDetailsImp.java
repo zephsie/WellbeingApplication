@@ -1,4 +1,4 @@
-package com.zephsie.wellbeing.configs.security;
+package com.zephsie.wellbeing.security;
 
 import com.zephsie.wellbeing.models.entity.User;
 import lombok.AllArgsConstructor;

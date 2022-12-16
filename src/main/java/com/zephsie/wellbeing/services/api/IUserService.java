@@ -15,5 +15,5 @@ public interface IUserService {
 
     Iterable<User> read(int page, int size);
 
-    void updateRole(Long id, String role, LocalDateTime version);
+    User updateRole(Long id, String role, LocalDateTime version);
 }

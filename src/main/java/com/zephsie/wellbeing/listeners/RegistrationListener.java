@@ -2,7 +2,6 @@ package com.zephsie.wellbeing.listeners;
 
 import com.zephsie.wellbeing.events.OnRegistrationCompleteEvent;
 import com.zephsie.wellbeing.models.entity.VerificationToken;
-import com.zephsie.wellbeing.services.entity.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
