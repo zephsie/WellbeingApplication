@@ -92,11 +92,7 @@ public class AuthenticationController {
 
         VerificationToken verificationToken = authenticationService.register(userDTOConverter.convertToEntity(personDTO));
 
-        try {
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(verificationToken));
-        } catch (Exception e) {
-            throw new EmailException("Failed to send verification email to " + verificationToken.getUser().getEmail() + ". Please try again later.");
-        }
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(verificationToken));
 
         return ResponseEntity.ok(Map.of("message", "Registration successful. Please check your email for verification link."));
     }
@@ -128,11 +124,7 @@ public class AuthenticationController {
 
         VerificationToken verificationToken = authenticationService.refreshVerificationToken(loginDTOConverter.convertToEntity(loginDTO));
 
-        try {
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(verificationToken));
-        } catch (Exception e) {
-            throw new EmailException("Failed to send verification email to " + verificationToken.getUser().getEmail() + ". Please try again later.");
-        }
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(verificationToken));
 
         return ResponseEntity.ok(Map.of("message", "Registration successful. Please check your email for verification link."));
     }

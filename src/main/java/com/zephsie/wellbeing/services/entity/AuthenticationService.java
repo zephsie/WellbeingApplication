@@ -63,29 +63,23 @@ public class AuthenticationService implements IAuthenticationService {
     @Override
     @Transactional
     public void verifyUser(VerificationToken verificationToken) {
-        Optional<VerificationToken> verificationTokenOptional = verificationTokenRepository.findByToken(verificationToken.getToken());
+        Optional<User> optionalUser = userRepository.findByEmail(verificationToken.getUser().getEmail());
 
-        if (verificationTokenOptional.isPresent() && verificationTokenOptional.get().getUser().getIsActive()) {
-            throw new ValidationException("User already verified");
+        User user = optionalUser.orElseThrow(() -> new InvalidCredentialException("User with email " + verificationToken.getUser().getEmail() + " not found"));
+
+        if (user.getIsActive()) {
+            throw new ValidationException("User with email " + verificationToken.getUser().getEmail() + " already verified");
         }
 
-        if (verificationTokenOptional.isEmpty()) {
-            throw new InvalidCredentialException("Invalid token");
-        }
+        VerificationToken verificationTokenFromDb = verificationTokenRepository.findByUser(user).orElseThrow(() -> new ValidationException("Verification token not found"));
 
-        VerificationToken verificationTokenFromDB = verificationTokenOptional.get();
-
-        User user = verificationTokenFromDB.getUser();
-
-        if (!verificationToken.getUser().getEmail().equals(user.getEmail()) || !passwordEncoder.matches(verificationToken.getUser().getPassword(), user.getPassword())) {
-            throw new InvalidCredentialException("Invalid credentials");
+        if (!verificationToken.getToken().equals(verificationTokenFromDb.getToken())) {
+            throw new InvalidCredentialException("Invalid verification token");
         }
 
         user.setIsActive(true);
 
         userRepository.save(user);
-
-        verificationTokenRepository.delete(verificationTokenFromDB);
     }
 
     @Override
@@ -93,7 +87,7 @@ public class AuthenticationService implements IAuthenticationService {
     public VerificationToken refreshVerificationToken(User user) {
         Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
 
-        User userFromDB = userOptional.orElseThrow(() -> new ValidationException("User with email " + user.getEmail() + " not found"));
+        User userFromDB = userOptional.orElseThrow(() -> new InvalidCredentialException("User with email " + user.getEmail() + " not found"));
 
         if (userFromDB.getIsActive()) {
             throw new ValidationException("User already verified");

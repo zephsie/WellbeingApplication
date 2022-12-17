@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "verification_token", schema = "structure",
         indexes = {
@@ -19,21 +21,21 @@ import lombok.Setter;
 public class VerificationToken {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    private Long id;
+    private UUID id = UUID.randomUUID();
 
-    @Column(name = "token")
+    @Column(name = "token", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     @NotEmpty(message = "Token cannot be empty")
     private String token;
   
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
+    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(nullable = false, name = "user_id", unique = true, updatable = false)
+    @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     private User user;

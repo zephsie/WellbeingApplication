@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Clock;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -27,13 +28,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
 
+    private final Clock clock;
+
     @Autowired
-    public JwtFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, ObjectMapper objectMapper) {
+    public JwtFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, ObjectMapper objectMapper, Clock clock) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.objectMapper = objectMapper;
+        this.clock = clock;
     }
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -50,12 +53,12 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             username = jwtUtil.extractUsername(jwt);
         } catch (Exception e) {
-            sendError(response, "Token is malformed");
+            sendError(response, "Token is invalid", HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         if (username == null) {
-            sendError(response, "Could not extract username from token");
+            sendError(response, "Could not extract username from token", HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
@@ -64,12 +67,12 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             userDetails = userDetailsService.loadUserByUsername(username);
         } catch (UsernameNotFoundException e) {
-            sendError(response, "User with " + username + " does not exist");
+            sendError(response, "User with " + username + " does not exist", HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         if (!jwtUtil.validateToken(jwt, userDetails)) {
-            sendError(response, "Token is invalid");
+            sendError(response, "Token is invalid", HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
@@ -78,10 +81,10 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void sendError(HttpServletResponse response, String message) throws IOException {
-        ErrorResponse errorResponse = new ErrorResponse(message, System.currentTimeMillis());
+    private void sendError(HttpServletResponse response, String message, int code) throws IOException {
+        ErrorResponse errorResponse = new ErrorResponse(message, clock.millis());
         response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setStatus(code);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

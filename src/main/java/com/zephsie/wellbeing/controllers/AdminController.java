@@ -8,10 +8,12 @@ import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.views.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -28,7 +30,7 @@ public class AdminController {
     }
 
     @PutMapping("/{id}/role/{role}/version/{version}")
-    public ResponseEntity<User> updateRole(@PathVariable("id") long id,
+    public ResponseEntity<User> updateRole(@PathVariable("id") UUID id,
                                            @PathVariable("role") String role,
                                            @PathVariable("version") long version) {
 
@@ -37,7 +39,7 @@ public class AdminController {
 
     @GetMapping("/{id}")
     @JsonView(UserView.Min.class)
-    public ResponseEntity<User> read(@PathVariable("id") long id) {
+    public ResponseEntity<User> read(@PathVariable("id") UUID id) {
 
         Optional<User> user = userService.read(id);
 
@@ -50,8 +52,8 @@ public class AdminController {
 
     @GetMapping
     @JsonView(UserView.Min.class)
-    public ResponseEntity<Iterable<User>> read(@RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "25") int size) {
+    public ResponseEntity<Page<User>> read(@RequestParam(defaultValue = "0") int page,
+                                           @RequestParam(defaultValue = "25") int size) {
 
         if (page < 0 || size < 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");

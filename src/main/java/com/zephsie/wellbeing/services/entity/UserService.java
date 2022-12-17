@@ -8,6 +8,7 @@ import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
 import com.zephsie.wellbeing.utils.exceptions.WrongVersionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService implements IUserService {
@@ -34,19 +36,19 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<User> read(Long id) {
+    public Optional<User> read(UUID id) {
         return userRepository.findById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Iterable<User> read(int page, int size) {
-        return userRepository.findAll(Pageable.ofSize(size).withPage(page)).getContent();
+    public Page<User> read(int page, int size) {
+        return userRepository.findAll(Pageable.ofSize(size).withPage(page));
     }
 
     @Override
     @Transactional
-    public void update(Long id, User user, LocalDateTime version) {
+    public void update(UUID id, User user, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
@@ -68,7 +70,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void delete(Long id, LocalDateTime version) {
+    public void delete(UUID id, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
@@ -82,7 +84,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public User updateRole(Long id, String role, LocalDateTime version) {
+    public User updateRole(UUID id, String role, LocalDateTime version) {
         if (!roles.contains(role)) {
             throw new IllegalArgumentException("Role " + role + " is not supported");
         }

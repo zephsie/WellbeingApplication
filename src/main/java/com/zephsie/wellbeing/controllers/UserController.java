@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -39,10 +40,10 @@ public class UserController {
 
     @GetMapping("/{id}")
     @JsonView(UserView.Min.class)
-    public ResponseEntity<User> read(@PathVariable("id") long id,
+    public ResponseEntity<User> read(@PathVariable("id") UUID id,
                                      @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
-        if (userDetailsImp.getUser().getId() != id) {
+        if (!userDetailsImp.getUser().getId().equals(id)) {
             throw new ValidationException("You can only view your own profile");
         }
 
@@ -57,13 +58,13 @@ public class UserController {
 
     @PutMapping("/{id}/version/{version}")
     @JsonView(UserView.Min.class)
-    public ResponseEntity<User> update(@PathVariable("id") long id,
+    public ResponseEntity<User> update(@PathVariable("id") UUID id,
                                        @PathVariable("version") long version,
                                        @RequestBody @Valid UserDTO userDTO,
                                        BindingResult bindingResult,
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
-        if (userDetailsImp.getUser().getId() != id) {
+        if (!userDetailsImp.getUser().getId().equals(id)) {
             throw new ValidationException("You can only update your own account");
         }
 
@@ -81,11 +82,11 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/version/{version}")
-    public ResponseEntity<Void> delete(@PathVariable("id") long id,
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id,
                                        @PathVariable("version") long version,
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
-        if (userDetailsImp.getUser().getId() != id) {
+        if (!userDetailsImp.getUser().getId().equals(id)) {
             throw new ValidationException("You can only delete your own account");
         }
 
