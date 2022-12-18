@@ -5,6 +5,7 @@ import com.zephsie.wellbeing.repositories.UserRepository;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
+import com.zephsie.wellbeing.utils.exceptions.ValidationException;
 import com.zephsie.wellbeing.utils.exceptions.WrongVersionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,8 +25,11 @@ public class UserService implements IUserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    @Value("#{'${user.roles}'.split(',')}")
-    private List<String> roles;
+    @Value("${role.user}")
+    private String ROLE_USER;
+
+    @Value("${role.admin}")
+    private String ROLE_ADMIN;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -79,13 +82,17 @@ public class UserService implements IUserService {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
+        if (existingUser.getRole().equals(ROLE_ADMIN) && userRepository.countByRole(ROLE_ADMIN) == 1) {
+            throw new ValidationException("User with id " + id + " is the only admin");
+        }
+
         userRepository.delete(existingUser);
     }
 
     @Override
     @Transactional
     public User updateRole(UUID id, String role, LocalDateTime version) {
-        if (!roles.contains(role)) {
+        if (!role.equals(ROLE_USER) && !role.equals(ROLE_ADMIN)) {
             throw new IllegalArgumentException("Role " + role + " is not supported");
         }
 

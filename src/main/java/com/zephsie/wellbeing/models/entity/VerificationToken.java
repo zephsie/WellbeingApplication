@@ -1,11 +1,14 @@
 package com.zephsie.wellbeing.models.entity;
 
+import com.zephsie.wellbeing.models.api.IBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,16 +18,15 @@ import java.util.UUID;
                 @Index(name = "verification_token_user_id_idx", columnList = "user_id")
         }
 )
-@Getter
-@Setter
 @NoArgsConstructor
-public class VerificationToken {
+public class VerificationToken implements IBaseEntity<UUID> {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Column(name = "token", nullable = false)
     @Access(AccessType.PROPERTY)
@@ -34,11 +36,23 @@ public class VerificationToken {
     private String token;
   
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinColumn(nullable = false, name = "user_id", unique = true, updatable = false)
+    @JoinColumn(nullable = false, name = "user_id", updatable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     private User user;
+
+    @Version
+    @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
+    @Access(AccessType.FIELD)
+    @Getter
+    private LocalDateTime version;
+
+    @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
+    @Access(AccessType.FIELD)
+    @CreationTimestamp
+    @Getter
+    private LocalDateTime createDate;
 
     public VerificationToken(String token, User user) {
         this.token = token;

@@ -48,6 +48,6 @@ public class UserDetailsImp implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getIsActive();
+        return user.getIsActive() || user.getRole().equals("ROLE_ADMIN");
     }
 }

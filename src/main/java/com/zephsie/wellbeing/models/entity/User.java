@@ -26,12 +26,13 @@ import java.util.UUID;
 public class User implements IBaseEntity<UUID> {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     @JsonView(UserView.Min.class)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Column(name = "username", nullable = false)
     @Access(AccessType.PROPERTY)

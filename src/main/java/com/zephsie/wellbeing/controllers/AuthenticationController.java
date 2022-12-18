@@ -1,16 +1,16 @@
 package com.zephsie.wellbeing.controllers;
 
-import com.zephsie.wellbeing.security.jwt.JwtUtil;
 import com.zephsie.wellbeing.dtos.LoginDTO;
 import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.dtos.VerificationDTO;
 import com.zephsie.wellbeing.events.OnRegistrationCompleteEvent;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.models.entity.VerificationToken;
+import com.zephsie.wellbeing.security.jwt.JwtUtil;
 import com.zephsie.wellbeing.services.api.IAuthenticationService;
 import com.zephsie.wellbeing.services.entity.UserDetailsServiceImpl;
 import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
-import com.zephsie.wellbeing.utils.exceptions.EmailException;
+import com.zephsie.wellbeing.utils.exceptions.ErrorsToExceptionConverter;
 import com.zephsie.wellbeing.utils.exceptions.InvalidCredentialException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
 import jakarta.validation.Valid;
@@ -26,7 +26,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.StringJoiner;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,8 +47,10 @@ public class AuthenticationController {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final ErrorsToExceptionConverter errorsToExceptionConverter;
+
     @Autowired
-    public AuthenticationController(AuthenticationManager authenticationManager, UserDetailsServiceImpl userDetailsService, IAuthenticationService authenticationService, JwtUtil jwtUtil, IEntityDTOConverter<User, UserDTO> userDTOConverter, IEntityDTOConverter<VerificationToken, VerificationDTO> verificationDTOConverter, IEntityDTOConverter<User, LoginDTO> loginDTOConverter, ApplicationEventPublisher eventPublisher) {
+    public AuthenticationController(AuthenticationManager authenticationManager, UserDetailsServiceImpl userDetailsService, IAuthenticationService authenticationService, JwtUtil jwtUtil, IEntityDTOConverter<User, UserDTO> userDTOConverter, IEntityDTOConverter<VerificationToken, VerificationDTO> verificationDTOConverter, IEntityDTOConverter<User, LoginDTO> loginDTOConverter, ApplicationEventPublisher eventPublisher, ErrorsToExceptionConverter errorsToExceptionConverter) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.authenticationService = authenticationService;
@@ -58,14 +59,13 @@ public class AuthenticationController {
         this.verificationDTOConverter = verificationDTOConverter;
         this.loginDTOConverter = loginDTOConverter;
         this.eventPublisher = eventPublisher;
+        this.errorsToExceptionConverter = errorsToExceptionConverter;
     }
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            StringJoiner stringJoiner = new StringJoiner(", ");
-            bindingResult.getAllErrors().forEach(error -> stringJoiner.add(error.getDefaultMessage()));
-            throw new ValidationException(stringJoiner.toString());
+            throw errorsToExceptionConverter.mapErrorsToException(bindingResult, ValidationException.class);
         }
 
         try {
@@ -85,9 +85,7 @@ public class AuthenticationController {
     @PostMapping(value = "/registration", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> register(@RequestBody @Valid UserDTO personDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            StringJoiner joiner = new StringJoiner(", ");
-            bindingResult.getAllErrors().forEach(objectError -> joiner.add(objectError.getDefaultMessage()));
-            throw new ValidationException(joiner.toString());
+            throw errorsToExceptionConverter.mapErrorsToException(bindingResult, ValidationException.class);
         }
 
         VerificationToken verificationToken = authenticationService.register(userDTOConverter.convertToEntity(personDTO));
@@ -100,9 +98,7 @@ public class AuthenticationController {
     @PostMapping(value = "/verification", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> verify(@RequestBody @Valid VerificationDTO verificationDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            StringJoiner joiner = new StringJoiner(", ");
-            bindingResult.getAllErrors().forEach(objectError -> joiner.add(objectError.getDefaultMessage()));
-            throw new ValidationException(joiner.toString());
+            throw errorsToExceptionConverter.mapErrorsToException(bindingResult, ValidationException.class);
         }
 
         authenticationService.verifyUser(verificationDTOConverter.convertToEntity(verificationDTO));
@@ -117,9 +113,7 @@ public class AuthenticationController {
     @PutMapping(value = "/token", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> refresh(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            StringJoiner joiner = new StringJoiner(", ");
-            bindingResult.getAllErrors().forEach(objectError -> joiner.add(objectError.getDefaultMessage()));
-            throw new ValidationException(joiner.toString());
+            throw errorsToExceptionConverter.mapErrorsToException(bindingResult, ValidationException.class);
         }
 
         VerificationToken verificationToken = authenticationService.refreshVerificationToken(loginDTOConverter.convertToEntity(loginDTO));

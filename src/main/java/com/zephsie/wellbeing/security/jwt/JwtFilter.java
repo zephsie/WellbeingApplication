@@ -1,7 +1,7 @@
 package com.zephsie.wellbeing.security.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zephsie.wellbeing.services.entity.UserDetailsServiceImpl;
+import com.zephsie.wellbeing.utils.http.CustomResponseSender;
 import com.zephsie.wellbeing.utils.responses.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,24 +26,30 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final UserDetailsServiceImpl userDetailsService;
 
-    private final ObjectMapper objectMapper;
-
     private final Clock clock;
 
+    private final CustomResponseSender customResponseSender;
+
     @Autowired
-    public JwtFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, ObjectMapper objectMapper, Clock clock) {
+    public JwtFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, Clock clock, CustomResponseSender customResponseSender) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
-        this.objectMapper = objectMapper;
         this.clock = clock;
+        this.customResponseSender = customResponseSender;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        if (request.getRequestURI().startsWith("/api/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            ErrorResponse errorResponse = new ErrorResponse("Authorization header is missing or invalid", clock.millis());
+            customResponseSender.send(response, HttpServletResponse.SC_UNAUTHORIZED, errorResponse);
             return;
         }
 
@@ -53,12 +59,14 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             username = jwtUtil.extractUsername(jwt);
         } catch (Exception e) {
-            sendError(response, "Token is invalid", HttpServletResponse.SC_FORBIDDEN);
+            ErrorResponse errorResponse = new ErrorResponse("Token is invalid", clock.millis());
+            customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN, errorResponse);
             return;
         }
 
         if (username == null) {
-            sendError(response, "Could not extract username from token", HttpServletResponse.SC_FORBIDDEN);
+            ErrorResponse errorResponse = new ErrorResponse("Could not extract username from token", clock.millis());
+            customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN, errorResponse);
             return;
         }
 
@@ -67,24 +75,19 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             userDetails = userDetailsService.loadUserByUsername(username);
         } catch (UsernameNotFoundException e) {
-            sendError(response, "User with " + username + " does not exist", HttpServletResponse.SC_FORBIDDEN);
+            ErrorResponse errorResponse = new ErrorResponse("User with " + username + " does not exist", clock.millis());
+            customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN, errorResponse);
             return;
         }
 
         if (!jwtUtil.validateToken(jwt, userDetails)) {
-            sendError(response, "Token is invalid", HttpServletResponse.SC_FORBIDDEN);
+            ErrorResponse errorResponse = new ErrorResponse("Token is invalid", clock.millis());
+            customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN, errorResponse);
             return;
         }
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         filterChain.doFilter(request, response);
-    }
-
-    private void sendError(HttpServletResponse response, String message, int code) throws IOException {
-        ErrorResponse errorResponse = new ErrorResponse(message, clock.millis());
-        response.setContentType("application/json");
-        response.setStatus(code);
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

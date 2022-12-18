@@ -1,12 +1,14 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.models.entity.User;
+import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
+import com.zephsie.wellbeing.utils.exceptions.ErrorsToExceptionConverter;
+import com.zephsie.wellbeing.utils.exceptions.InvalidCredentialException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
 import com.zephsie.wellbeing.utils.views.UserView;
@@ -18,8 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 @RestController
@@ -31,11 +31,14 @@ public class UserController {
 
     private final IEntityDTOConverter<User, UserDTO> userDTOConverter;
 
+    private final ErrorsToExceptionConverter errorsToExceptionConverter;
+
     @Autowired
-    public UserController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, IEntityDTOConverter<User, UserDTO> userDTOConverter) {
+    public UserController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, IEntityDTOConverter<User, UserDTO> userDTOConverter, ErrorsToExceptionConverter errorsToExceptionConverter) {
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
         this.userDTOConverter = userDTOConverter;
+        this.errorsToExceptionConverter = errorsToExceptionConverter;
     }
 
     @GetMapping("/{id}")
@@ -44,16 +47,12 @@ public class UserController {
                                      @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
         if (!userDetailsImp.getUser().getId().equals(id)) {
-            throw new ValidationException("You can only view your own profile");
+            throw new InvalidCredentialException("You can only view your own profile");
         }
 
-        Optional<User> user = userService.read(id);
-
-        if (user.isEmpty()) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-
-        return ResponseEntity.ok(user.get());
+        return userService.read(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
     }
 
     @PutMapping("/{id}/version/{version}")
@@ -65,13 +64,11 @@ public class UserController {
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
         if (!userDetailsImp.getUser().getId().equals(id)) {
-            throw new ValidationException("You can only update your own account");
+            throw new InvalidCredentialException("You can only update your own account");
         }
 
         if (bindingResult.hasErrors()) {
-            StringJoiner stringJoiner = new StringJoiner(", ");
-            bindingResult.getAllErrors().forEach(error -> stringJoiner.add(error.getDefaultMessage()));
-            throw new ValidationException(stringJoiner.toString());
+            throw errorsToExceptionConverter.mapErrorsToException(bindingResult, ValidationException.class);
         }
 
         User user = userDTOConverter.convertToEntity(userDTO);
@@ -87,7 +84,7 @@ public class UserController {
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
         if (!userDetailsImp.getUser().getId().equals(id)) {
-            throw new ValidationException("You can only delete your own account");
+            throw new InvalidCredentialException("You can only delete your own account");
         }
 
         userService.delete(id, unixTimeToLocalDateTimeConverter.convert(version));

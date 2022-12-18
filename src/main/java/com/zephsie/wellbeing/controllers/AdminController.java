@@ -6,13 +6,13 @@ import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
+import com.zephsie.wellbeing.utils.json.converters.PageJSONConverter;
+import com.zephsie.wellbeing.utils.json.custom.CustomPage;
 import com.zephsie.wellbeing.utils.views.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -23,10 +23,13 @@ public class AdminController {
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
+    private final PageJSONConverter pageJSONConverter;
+
     @Autowired
-    public AdminController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter) {
+    public AdminController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, PageJSONConverter pageJSONConverter) {
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
+        this.pageJSONConverter = pageJSONConverter;
     }
 
     @PutMapping("/{id}/role/{role}/version/{version}")
@@ -41,24 +44,17 @@ public class AdminController {
     @JsonView(UserView.Min.class)
     public ResponseEntity<User> read(@PathVariable("id") UUID id) {
 
-        Optional<User> user = userService.read(id);
-
-        if (user.isEmpty()) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
-
-        return ResponseEntity.ok(user.get());
+        return userService.read(id).map(ResponseEntity::ok).orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
     }
 
     @GetMapping
-    @JsonView(UserView.Min.class)
-    public ResponseEntity<Page<User>> read(@RequestParam(defaultValue = "0") int page,
-                                           @RequestParam(defaultValue = "25") int size) {
+    public ResponseEntity<CustomPage> read(@RequestParam int page,
+                                           @RequestParam int size) {
 
-        if (page < 0 || size < 0) {
+        if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(userService.read(page, size));
+        return ResponseEntity.ok(pageJSONConverter.convertPage(userService.read(page, size)));
     }
 }
