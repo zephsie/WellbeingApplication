@@ -55,11 +55,11 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
                     customResponseSender.send(response, HttpServletResponse.SC_UNAUTHORIZED,
-                            new SingleErrorResponse("error", "You are not authorized to access this resource"));
+                            new SingleErrorResponse("error", "Unauthorized"));
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN,
-                            new SingleErrorResponse("error", "You are not authorized to access this resource"));
+                            new SingleErrorResponse("error", "Forbidden"));
                 });
 
         return http.build();
