@@ -1,6 +1,6 @@
 package com.zephsie.wellbeing.utils.views;
 
-public class UserView {
-    public static class Min {
-    }
+public interface UserView {
+    interface Minimal {}
+    interface System extends Minimal {}
 }

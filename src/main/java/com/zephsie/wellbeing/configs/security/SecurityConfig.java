@@ -1,8 +1,10 @@
 package com.zephsie.wellbeing.configs.security;
 
 import com.zephsie.wellbeing.security.jwt.JwtFilter;
+import com.zephsie.wellbeing.utils.http.CustomResponseSender;
+import com.zephsie.wellbeing.utils.responses.SingleErrorResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,13 +28,13 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    @Value("${role.admin}")
-    private String ROLE_ADMIN;
+    private final CustomResponseSender customResponseSender;
 
     @Autowired
-    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter) {
+    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter, CustomResponseSender customResponseSender) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
+        this.customResponseSender = customResponseSender;
     }
 
     @Bean
@@ -41,14 +43,24 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement((sessionManagement) -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class);
+                .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
+
+                .exceptionHandling()
+                .authenticationEntryPoint((request, response, authException) -> {
+                    customResponseSender.send(response, HttpServletResponse.SC_UNAUTHORIZED,
+                            new SingleErrorResponse("error", "You are not authorized to access this resource"));
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    customResponseSender.send(response, HttpServletResponse.SC_FORBIDDEN,
+                            new SingleErrorResponse("error", "You are not authorized to access this resource"));
+                });
 
         return http.build();
     }

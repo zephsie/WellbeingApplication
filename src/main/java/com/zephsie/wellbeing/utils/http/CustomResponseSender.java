@@ -20,6 +20,7 @@ public class CustomResponseSender {
 
     public void send(HttpServletResponse response, int code, Object o) throws IOException {
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(code);
         response.getWriter().write(objectMapper.writeValueAsString(o));
     }

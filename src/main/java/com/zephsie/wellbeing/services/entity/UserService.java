@@ -8,7 +8,6 @@ import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
 import com.zephsie.wellbeing.utils.exceptions.WrongVersionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,12 +23,6 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${role.user}")
-    private String ROLE_USER;
-
-    @Value("${role.admin}")
-    private String ROLE_ADMIN;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -82,7 +75,7 @@ public class UserService implements IUserService {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        if (existingUser.getRole().equals(ROLE_ADMIN) && userRepository.countByRole(ROLE_ADMIN) == 1) {
+        if (existingUser.getRole().equals("ROLE_ADMIN") && userRepository.countByRole("ROLE_ADMIN") == 1) {
             throw new ValidationException("User with id " + id + " is the only admin");
         }
 
@@ -92,8 +85,8 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public User updateRole(UUID id, String role, LocalDateTime version) {
-        if (!role.equals(ROLE_USER) && !role.equals(ROLE_ADMIN)) {
-            throw new IllegalArgumentException("Role " + role + " is not supported");
+        if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN")) {
+            throw new ValidationException("Role " + role + " is not supported");
         }
 
         Optional<User> optionalPerson = userRepository.findById(id);

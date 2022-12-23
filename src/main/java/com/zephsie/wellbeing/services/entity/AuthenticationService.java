@@ -29,12 +29,6 @@ public class AuthenticationService implements IAuthenticationService {
 
     private final IRandomTokenProvider randomTokenProvider;
 
-    @Value("${role.default}")
-    private String ROLE_DEFAULT;
-
-    @Value("${active.default}")
-    private boolean ACTIVE_DEFAULT;
-
     @Value("${token.expiration}")
     private long TOKEN_EXPIRATION;
 
@@ -59,8 +53,8 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(ROLE_DEFAULT);
-        user.setIsActive(ACTIVE_DEFAULT);
+        user.setRole("ROLE_USER");
+        user.setIsActive(false);
 
         VerificationToken verificationToken = new VerificationToken(randomTokenProvider.generate(), user);
         verificationTokenRepository.save(verificationToken);

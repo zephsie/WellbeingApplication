@@ -1,6 +1,7 @@
 package com.zephsie.wellbeing.controllers;
 
-import com.zephsie.wellbeing.utils.responses.ErrorResponse;
+import com.zephsie.wellbeing.utils.responses.api.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalControllerExceptionHandler {
 
     private final Map<Class<? extends Exception>, Function<Exception, ResponseEntity<ErrorResponse>>> exceptionHandlers;
@@ -24,6 +26,13 @@ public class GlobalControllerExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception exception) {
-        return exceptionHandlers.getOrDefault(exception.getClass(), defaultHandler).apply(exception);
+        Function<Exception, ResponseEntity<ErrorResponse>> handler = exceptionHandlers.get(exception.getClass());
+
+        if (handler == null) {
+            log.error("Unhandled exception", exception);
+            handler = defaultHandler;
+        }
+
+        return handler.apply(exception);
     }
 }

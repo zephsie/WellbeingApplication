@@ -6,10 +6,9 @@ import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
-import com.zephsie.wellbeing.utils.json.converters.PageJSONConverter;
-import com.zephsie.wellbeing.utils.json.custom.CustomPage;
 import com.zephsie.wellbeing.utils.views.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,16 +22,14 @@ public class AdminController {
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
-    private final PageJSONConverter pageJSONConverter;
-
     @Autowired
-    public AdminController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter, PageJSONConverter pageJSONConverter) {
+    public AdminController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter) {
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
-        this.pageJSONConverter = pageJSONConverter;
     }
 
-    @PutMapping("/{id}/role/{role}/version/{version}")
+    @PutMapping(value = "/{id}/role/{role}/version/{version}", produces = "application/json")
+    @JsonView(UserView.Minimal.class)
     public ResponseEntity<User> updateRole(@PathVariable("id") UUID id,
                                            @PathVariable("role") String role,
                                            @PathVariable("version") long version) {
@@ -40,21 +37,22 @@ public class AdminController {
         return ResponseEntity.ok(userService.updateRole(id, role, unixTimeToLocalDateTimeConverter.convert(version)));
     }
 
-    @GetMapping("/{id}")
-    @JsonView(UserView.Min.class)
+    @GetMapping(value = "/{id}", produces = "application/json")
+    @JsonView(UserView.Minimal.class)
     public ResponseEntity<User> read(@PathVariable("id") UUID id) {
 
         return userService.read(id).map(ResponseEntity::ok).orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
     }
 
-    @GetMapping
-    public ResponseEntity<CustomPage> read(@RequestParam int page,
-                                           @RequestParam int size) {
+    @GetMapping(produces = "application/json")
+    @JsonView(UserView.Minimal.class)
+    public ResponseEntity<Page<User>> read(@RequestParam(value = "page", defaultValue = "0") int page,
+                                           @RequestParam(value = "size", defaultValue = "10") int size) {
 
         if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(pageJSONConverter.convertPage(userService.read(page, size)));
+        return ResponseEntity.ok(userService.read(page, size));
     }
 }
