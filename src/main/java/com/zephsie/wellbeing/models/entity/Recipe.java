@@ -35,11 +35,16 @@ public class Recipe implements IBaseEntity<UUID> {
     @Setter
     private String title;
 
-    @OneToMany(targetEntity = RecipeComposition.class, mappedBy = "recipe", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @Column(name = "weight", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    private List<RecipeComposition> recipeCompositions;
+    private Integer weight;
+
+    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.EAGER)
+    @Getter
+    @Setter
+    private List<Composition> compositions;
 
     @Version
     @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)

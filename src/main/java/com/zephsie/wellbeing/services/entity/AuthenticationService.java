@@ -108,14 +108,8 @@ public class AuthenticationService implements IAuthenticationService {
             throw new ValidationException("User already verified");
         }
 
-        Optional<VerificationToken> verificationTokenOptional = verificationTokenRepository.findByUser(userFromDB);
+        verificationTokenRepository.deleteByUser(userFromDB);
 
-        VerificationToken verificationToken = verificationTokenOptional.map(v -> {
-            v.setToken(randomTokenProvider.generate());
-            return v;
-        }).orElseGet(() -> new VerificationToken(randomTokenProvider.generate(), userFromDB));
-
-        verificationTokenRepository.save(verificationToken);
-        return verificationToken;
+        return verificationTokenRepository.save(new VerificationToken(randomTokenProvider.generate(), userFromDB));
     }
 }

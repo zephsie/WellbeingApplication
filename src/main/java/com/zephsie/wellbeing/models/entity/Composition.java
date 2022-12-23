@@ -13,14 +13,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "recipe_composition", schema = "structure")
+@Table(name = "composition", schema = "structure")
 @DynamicUpdate
 @NoArgsConstructor
-public class RecipeComposition implements IBaseEntity<UUID> {
+public class Composition implements IBaseEntity<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
@@ -29,25 +28,25 @@ public class RecipeComposition implements IBaseEntity<UUID> {
     @Setter
     private UUID id;
 
-    @OneToMany(targetEntity = Product.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinColumn(nullable = false, name = "product_id")
-    @Access(AccessType.PROPERTY)
-    @Getter
-    @Setter
-    private List<Product> product;
-
-    @ManyToOne(targetEntity = Recipe.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinColumn(nullable = false, name = "recipe_id")
-    @Access(AccessType.PROPERTY)
-    @Getter
-    @Setter
-    private Recipe recipe;
-
     @Column(name = "weight", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     private Integer weight;
+
+    @ManyToOne(targetEntity = Product.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    @Access(AccessType.PROPERTY)
+    @Getter
+    @Setter
+    private Product product;
+
+    @ManyToOne(targetEntity = Recipe.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipe_id", nullable = false)
+    @Access(AccessType.PROPERTY)
+    @Getter
+    @Setter
+    private Recipe recipe;
 
     @Version
     @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
