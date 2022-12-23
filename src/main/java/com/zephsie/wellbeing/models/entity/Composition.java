@@ -2,7 +2,7 @@ package com.zephsie.wellbeing.models.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.zephsie.wellbeing.models.api.IBaseEntity;
+import com.zephsie.wellbeing.models.api.IImmutableEntity;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeDesSerializer;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeSerializer;
 import jakarta.persistence.*;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(name = "composition", schema = "structure")
 @DynamicUpdate
 @NoArgsConstructor
-public class Composition implements IBaseEntity<UUID> {
+public class Composition implements IImmutableEntity<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
@@ -47,14 +47,6 @@ public class Composition implements IBaseEntity<UUID> {
     @Getter
     @Setter
     private Recipe recipe;
-
-    @Version
-    @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
-    @Access(AccessType.FIELD)
-    @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-    @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
-    @Getter
-    private LocalDateTime version;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)

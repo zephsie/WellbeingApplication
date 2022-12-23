@@ -64,6 +64,13 @@ public class Product implements IBaseEntity<UUID> {
     @Setter
     private Double carbohydrates;
 
+    @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", updatable = false)
+    @Access(AccessType.PROPERTY)
+    @Getter
+    @Setter
+    private User user;
+
     @Version
     @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
