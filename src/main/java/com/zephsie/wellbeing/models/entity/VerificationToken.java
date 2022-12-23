@@ -1,6 +1,6 @@
 package com.zephsie.wellbeing.models.entity;
 
-import com.zephsie.wellbeing.models.api.IBaseEntity;
+import com.zephsie.wellbeing.models.api.IImmutableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.UUID;
         }
 )
 @NoArgsConstructor
-public class VerificationToken implements IBaseEntity<UUID> {
+public class VerificationToken implements IImmutableEntity<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
@@ -41,12 +41,6 @@ public class VerificationToken implements IBaseEntity<UUID> {
     @Getter
     @Setter
     private User user;
-
-    @Version
-    @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
-    @Access(AccessType.FIELD)
-    @Getter
-    private LocalDateTime version;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)

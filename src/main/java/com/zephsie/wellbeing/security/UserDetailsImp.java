@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.security;
 
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.models.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class UserDetailsImp implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole()));
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override
@@ -48,6 +49,6 @@ public class UserDetailsImp implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getIsActive() || user.getRole().equals("ROLE_ADMIN");
+        return user.getIsActive() || user.getRole() == Role.ROLE_ADMIN;
     }
 }

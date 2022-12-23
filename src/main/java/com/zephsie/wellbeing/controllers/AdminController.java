@@ -1,6 +1,7 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
@@ -29,23 +30,24 @@ public class AdminController {
     }
 
     @PutMapping(value = "/{id}/role/{role}/version/{version}", produces = "application/json")
-    @JsonView(UserView.Minimal.class)
+    @JsonView(UserView.System.class)
     public ResponseEntity<User> updateRole(@PathVariable("id") UUID id,
-                                           @PathVariable("role") String role,
+                                           @PathVariable("role") Role role,
                                            @PathVariable("version") long version) {
 
         return ResponseEntity.ok(userService.updateRole(id, role, unixTimeToLocalDateTimeConverter.convert(version)));
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @JsonView(UserView.Minimal.class)
+    @JsonView(UserView.System.class)
     public ResponseEntity<User> read(@PathVariable("id") UUID id) {
 
-        return userService.read(id).map(ResponseEntity::ok).orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
+        return userService.read(id).map(ResponseEntity::ok)
+                .orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
     }
 
     @GetMapping(produces = "application/json")
-    @JsonView(UserView.Minimal.class)
+    @JsonView(UserView.System.class)
     public ResponseEntity<Page<User>> read(@RequestParam(value = "page", defaultValue = "0") int page,
                                            @RequestParam(value = "size", defaultValue = "10") int size) {
 

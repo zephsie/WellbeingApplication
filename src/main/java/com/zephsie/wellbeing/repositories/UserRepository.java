@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.repositories;
 
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.models.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,5 +20,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
-    long countByRole(String role);
+    long countByRole(Role role);
 }

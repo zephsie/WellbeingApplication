@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -26,6 +27,7 @@ import java.util.UUID;
 @DynamicUpdate
 @NoArgsConstructor
 @JsonView(UserView.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements IBaseEntity<UUID> {
 
     @Id
@@ -62,7 +64,8 @@ public class User implements IBaseEntity<UUID> {
     @Getter
     @Setter
     @JsonView(UserView.Minimal.class)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(name = "is_active", nullable = false)
     @Access(AccessType.PROPERTY)

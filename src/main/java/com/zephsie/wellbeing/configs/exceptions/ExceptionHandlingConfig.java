@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -37,8 +40,13 @@ public class ExceptionHandlingConfig {
                 Map.entry(AccessDeniedException.class, e ->
                         ResponseEntity.status(HttpStatus.FORBIDDEN).body(new SingleErrorResponse("error", e.getMessage()))),
                 Map.entry(BasicFieldValidationException.class, e -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new MultipleErrorResponse("error", ((BasicFieldValidationException) e).getErrors()))
-                )
+                        .body(new MultipleErrorResponse("error", ((BasicFieldValidationException) e).getErrors()))),
+                Map.entry(MethodArgumentTypeMismatchException.class, e ->
+                        ResponseEntity.badRequest().body(new SingleErrorResponse("error", "Invalid values passed"))),
+                Map.entry(HttpRequestMethodNotSupportedException.class, e ->
+                        ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(new SingleErrorResponse("error", "Method not allowed"))),
+                Map.entry(HttpMediaTypeNotSupportedException.class, e ->
+                        ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(new SingleErrorResponse("error", "Unsupported media type")))
         );
     }
 

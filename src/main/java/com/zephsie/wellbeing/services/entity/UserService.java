@@ -1,5 +1,7 @@
 package com.zephsie.wellbeing.services.entity;
 
+import com.zephsie.wellbeing.dtos.UserDTO;
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.repositories.UserRepository;
 import com.zephsie.wellbeing.services.api.IUserService;
@@ -44,7 +46,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void update(UUID id, User user, LocalDateTime version) {
+    public User update(UUID id, UserDTO userDTO, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
@@ -53,15 +55,37 @@ public class UserService implements IUserService {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        if (!existingUser.getEmail().equals(user.getEmail()) && userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new NotUniqueException("User with email " + user.getEmail() + " already exists");
+        if (!existingUser.getEmail().equals(userDTO.getEmail()) && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new NotUniqueException("User with email " + userDTO.getEmail() + " already exists");
         }
 
-        existingUser.setUsername(user.getUsername());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
+        return userRepository.save(existingUser);
+    }
+
+    @Override
+    @Transactional
+    public User updateRole(UUID id, Role role, LocalDateTime version) {
+        Optional<User> optionalPerson = userRepository.findById(id);
+
+        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
+
+        if (!existingUser.getVersion().equals(version)) {
+            throw new WrongVersionException("User with id " + id + " has been updated");
+        }
+
+        if (existingUser.getRole() == Role.ROLE_ADMIN && role == Role.ROLE_USER) {
+            throw new ValidationException("Cannot downgrade admin user");
+        }
+
+        existingUser.setRole(role);
 
         userRepository.save(existingUser);
+
+        return existingUser;
     }
 
     @Override
@@ -75,32 +99,10 @@ public class UserService implements IUserService {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        if (existingUser.getRole().equals("ROLE_ADMIN") && userRepository.countByRole("ROLE_ADMIN") == 1) {
+        if (existingUser.getRole().equals(Role.ROLE_ADMIN) && userRepository.countByRole(Role.ROLE_ADMIN) == 1) {
             throw new ValidationException("User with id " + id + " is the only admin");
         }
 
         userRepository.delete(existingUser);
-    }
-
-    @Override
-    @Transactional
-    public User updateRole(UUID id, String role, LocalDateTime version) {
-        if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN")) {
-            throw new ValidationException("Role " + role + " is not supported");
-        }
-
-        Optional<User> optionalPerson = userRepository.findById(id);
-
-        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
-
-        if (!existingUser.getVersion().equals(version)) {
-            throw new WrongVersionException("User with id " + id + " has been updated");
-        }
-
-        existingUser.setRole(role);
-
-        userRepository.save(existingUser);
-
-        return existingUser;
     }
 }

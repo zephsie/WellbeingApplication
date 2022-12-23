@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.configs.security;
 
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.security.jwt.JwtFilter;
 import com.zephsie.wellbeing.utils.http.CustomResponseSender;
 import com.zephsie.wellbeing.utils.responses.SingleErrorResponse;
@@ -43,7 +44,7 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole(Role.ROLE_ADMIN.name().substring(5))
                         .anyRequest().authenticated()
                 )
                 .sessionManagement((sessionManagement) -> sessionManagement

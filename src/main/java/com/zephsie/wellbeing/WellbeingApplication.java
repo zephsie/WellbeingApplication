@@ -1,5 +1,7 @@
 package com.zephsie.wellbeing;
 
+import com.zephsie.wellbeing.dtos.UserDTO;
+import com.zephsie.wellbeing.models.entity.Role;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.services.api.IAuthenticationService;
 import com.zephsie.wellbeing.services.api.IUserService;
@@ -34,22 +36,17 @@ public class WellbeingApplication {
     @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
-            User user = new User();
-            user.setEmail("admin@admin.admin");
-            user.setPassword("admin");
-            user.setUsername("admin");
+            UserDTO userDTO = new UserDTO("admin@admin.admin", "admin", "admin");
 
             try {
-                authenticationService.register(user);
-
-                userService.updateRole(user.getId(), "ROLE_ADMIN", user.getVersion());
-
+                User user = authenticationService.register(userDTO).getUser();
+                userService.updateRole(user.getId(), Role.ROLE_ADMIN, user.getVersion());
                 log.info("Admin user created");
             } catch (NotUniqueException e) {
                 log.info("Admin user already exists");
             }
 
-            log.info("Email: " + user.getEmail() + " Password: " + user.getPassword());
+            log.info("Email: " + userDTO.getEmail() + " Password: " + userDTO.getPassword());
         };
     }
 }
