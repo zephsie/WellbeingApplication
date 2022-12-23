@@ -9,7 +9,7 @@ import com.zephsie.wellbeing.models.entity.VerificationToken;
 import com.zephsie.wellbeing.security.jwt.JwtUtil;
 import com.zephsie.wellbeing.services.api.IAuthenticationService;
 import com.zephsie.wellbeing.services.entity.UserDetailsServiceImpl;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMultipleErrorResponseConverter;
+import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.exceptions.InvalidCredentialException;
@@ -47,7 +47,7 @@ public class AuthenticationController {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    private final ErrorsToMultipleErrorResponseConverter errorsToMultipleErrorResponseConverter;
+    private final ErrorsToMapConverter errorsToMapConverter;
 
     @Autowired
     public AuthenticationController(AuthenticationManager authenticationManager, UserDetailsServiceImpl userDetailsService,
@@ -55,7 +55,7 @@ public class AuthenticationController {
                                     IEntityDTOConverter<User, UserDTO> userDTOConverter,
                                     IEntityDTOConverter<VerificationToken, VerificationDTO> verificationDTOConverter,
                                     IEntityDTOConverter<User, LoginDTO> loginDTOConverter, ApplicationEventPublisher eventPublisher,
-                                    ErrorsToMultipleErrorResponseConverter errorsToMultipleErrorResponseConverter) {
+                                    ErrorsToMapConverter errorsToMapConverter) {
 
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
@@ -65,13 +65,13 @@ public class AuthenticationController {
         this.verificationDTOConverter = verificationDTOConverter;
         this.loginDTOConverter = loginDTOConverter;
         this.eventPublisher = eventPublisher;
-        this.errorsToMultipleErrorResponseConverter = errorsToMultipleErrorResponseConverter;
+        this.errorsToMapConverter = errorsToMapConverter;
     }
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMultipleErrorResponseConverter.map(bindingResult));
+            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
         try {
@@ -91,7 +91,7 @@ public class AuthenticationController {
     @PostMapping(value = "/registration", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> register(@RequestBody @Valid UserDTO personDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMultipleErrorResponseConverter.map(bindingResult));
+            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
         VerificationToken verificationToken = authenticationService.register(userDTOConverter.convertToEntity(personDTO));
@@ -104,7 +104,7 @@ public class AuthenticationController {
     @PostMapping(value = "/verification", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> verify(@RequestBody @Valid VerificationDTO verificationDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMultipleErrorResponseConverter.map(bindingResult));
+            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
         authenticationService.verifyUser(verificationDTOConverter.convertToEntity(verificationDTO));
@@ -119,7 +119,7 @@ public class AuthenticationController {
     @PutMapping(value = "/token", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Map<String, String>> refresh(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMultipleErrorResponseConverter.map(bindingResult));
+            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
         VerificationToken verificationToken = authenticationService.refreshVerificationToken(loginDTOConverter.convertToEntity(loginDTO));

@@ -1,14 +1,15 @@
 package com.zephsie.wellbeing.utils.exceptions;
 
-import com.zephsie.wellbeing.utils.responses.MultipleErrorResponse;
-public class BasicFieldValidationException extends RuntimeException {
-    private final MultipleErrorResponse multipleErrorResponse;
+import java.util.Map;
 
-    public BasicFieldValidationException(MultipleErrorResponse multipleErrorResponse) {
-        this.multipleErrorResponse = multipleErrorResponse;
+public class BasicFieldValidationException extends RuntimeException {
+    private final Map<String, String> errors;
+
+    public BasicFieldValidationException(Map<String, String> errors) {
+        this.errors = errors;
     }
 
-    public MultipleErrorResponse getMultipleErrorResponse() {
-        return multipleErrorResponse;
+    public Map<String, String> getErrors() {
+        return errors;
     }
 }

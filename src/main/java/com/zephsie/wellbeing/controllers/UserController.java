@@ -5,7 +5,7 @@ import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IUserService;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMultipleErrorResponseConverter;
+import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
@@ -31,15 +31,15 @@ public class UserController {
 
     private final IEntityDTOConverter<User, UserDTO> userDTOConverter;
 
-    ErrorsToMultipleErrorResponseConverter errorsToMultipleErrorResponseConverter;
+    ErrorsToMapConverter errorsToMapConverter;
 
     @Autowired
     public UserController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
-                          IEntityDTOConverter<User, UserDTO> userDTOConverter, ErrorsToMultipleErrorResponseConverter errorsToMultipleErrorResponseConverter) {
+                          IEntityDTOConverter<User, UserDTO> userDTOConverter, ErrorsToMapConverter errorsToMapConverter) {
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
         this.userDTOConverter = userDTOConverter;
-        this.errorsToMultipleErrorResponseConverter = errorsToMultipleErrorResponseConverter;
+        this.errorsToMapConverter = errorsToMapConverter;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
@@ -65,7 +65,7 @@ public class UserController {
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMultipleErrorResponseConverter.map(bindingResult));
+            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
         if (!userDetailsImp.getUser().getId().equals(id)) {

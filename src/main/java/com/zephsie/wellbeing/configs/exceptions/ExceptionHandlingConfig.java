@@ -1,6 +1,7 @@
 package com.zephsie.wellbeing.configs.exceptions;
 
 import com.zephsie.wellbeing.utils.exceptions.*;
+import com.zephsie.wellbeing.utils.responses.MultipleErrorResponse;
 import com.zephsie.wellbeing.utils.responses.SingleErrorResponse;
 import com.zephsie.wellbeing.utils.responses.api.ErrorResponse;
 import org.springframework.context.annotation.Bean;
@@ -35,8 +36,9 @@ public class ExceptionHandlingConfig {
                         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new SingleErrorResponse("error", e.getMessage()))),
                 Map.entry(AccessDeniedException.class, e ->
                         ResponseEntity.status(HttpStatus.FORBIDDEN).body(new SingleErrorResponse("error", e.getMessage()))),
-                Map.entry(BasicFieldValidationException.class, e ->
-                        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(((BasicFieldValidationException) e).getMultipleErrorResponse()))
+                Map.entry(BasicFieldValidationException.class, e -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new MultipleErrorResponse("error", ((BasicFieldValidationException) e).getErrors()))
+                )
         );
     }
 
