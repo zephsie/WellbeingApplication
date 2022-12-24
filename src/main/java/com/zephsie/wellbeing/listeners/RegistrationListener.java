@@ -42,7 +42,6 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         try {
             mailSender.send(email);
         } catch (Exception e) {
-            // call external service to send email or something
             log.error("Failed to send email to " + recipientAddress);
         }
     }

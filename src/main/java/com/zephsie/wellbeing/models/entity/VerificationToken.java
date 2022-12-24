@@ -14,7 +14,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "verification_token", schema = "structure",
         indexes = {
-                @Index(name = "verification_token_token_idx", columnList = "token"),
                 @Index(name = "verification_token_user_id_idx", columnList = "user_id")
         }
 )
@@ -34,7 +33,7 @@ public class VerificationToken implements IImmutableEntity<UUID> {
     @Setter
     @NotEmpty(message = "Token cannot be empty")
     private String token;
-  
+
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(nullable = false, name = "user_id", updatable = false)
     @Access(AccessType.PROPERTY)

@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,11 +75,5 @@ public class RecipeService implements IRecipeService {
     @Transactional(readOnly = true)
     public Page<Recipe> read(int page, int size) {
         return recipeRepository.findAll(Pageable.ofSize(size).withPage(page));
-    }
-
-    @Override
-    @Transactional
-    public Recipe update(UUID id, RecipeDTO recipeDTO, LocalDateTime version, User user) {
-        return null;
     }
 }

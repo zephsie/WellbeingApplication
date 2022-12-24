@@ -1,6 +1,5 @@
 package com.zephsie.wellbeing.models.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -82,7 +81,7 @@ public class Product implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonIgnore
+    @JsonView(EntityView.Full.class)
     private User user;
 
     @Version

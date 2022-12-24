@@ -1,6 +1,5 @@
 package com.zephsie.wellbeing.models.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -30,6 +29,7 @@ public class Composition implements IImmutableEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
+    @JsonView(EntityView.Full.class)
     private UUID id;
 
     @Column(name = "weight", nullable = false)
@@ -52,7 +52,7 @@ public class Composition implements IImmutableEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonIgnore
+    @JsonView(EntityView.Full.class)
     private Recipe recipe;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
@@ -61,5 +61,6 @@ public class Composition implements IImmutableEntity<UUID> {
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
+    @JsonView(EntityView.Full.class)
     private LocalDateTime createDate;
 }

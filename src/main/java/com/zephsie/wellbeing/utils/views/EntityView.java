@@ -9,4 +9,7 @@ public interface EntityView {
 
     interface WithMappings extends System {
     }
+
+    interface Full extends WithMappings {
+    }
 }

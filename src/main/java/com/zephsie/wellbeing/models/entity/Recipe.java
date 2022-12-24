@@ -1,6 +1,5 @@
 package com.zephsie.wellbeing.models.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -55,7 +54,7 @@ public class Recipe implements IBaseEntity<UUID> {
     @JsonView(EntityView.Base.class)
     private String title;
 
-    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER, orphanRemoval = true)
     @Getter
     @Setter
     @JsonView(EntityView.WithMappings.class)
@@ -66,7 +65,7 @@ public class Recipe implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonIgnore
+    @JsonView(EntityView.System.class)
     private User user;
 
     @Version

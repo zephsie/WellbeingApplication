@@ -6,7 +6,6 @@ import com.zephsie.wellbeing.models.entity.Recipe;
 import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IRecipeService;
 import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
-import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
@@ -27,17 +26,13 @@ public class RecipeController {
 
     private final IRecipeService recipeService;
 
-    private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
-
     private final ErrorsToMapConverter errorsToMapConverter;
 
     @Autowired
     public RecipeController(IRecipeService recipeService,
-                            UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
                             ErrorsToMapConverter errorsToMapConverter) {
 
         this.recipeService = recipeService;
-        this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
         this.errorsToMapConverter = errorsToMapConverter;
     }
 
@@ -73,21 +68,5 @@ public class RecipeController {
         }
 
         return ResponseEntity.ok(recipeService.read(page, size));
-    }
-
-    @PutMapping(value = "/{id}/version/{version}", consumes = "application/json", produces = "application/json")
-    @JsonView(EntityView.WithMappings.class)
-    public ResponseEntity<Recipe> update(@PathVariable("id") UUID id,
-                                         @PathVariable("version") long version,
-                                         @RequestBody @Valid RecipeDTO recipeDTO,
-                                         BindingResult bindingResult,
-                                         @AuthenticationPrincipal UserDetailsImp userDetails) {
-
-        if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
-        }
-
-        return ResponseEntity.ok(recipeService.update(id, recipeDTO,
-                unixTimeToLocalDateTimeConverter.convert(version), userDetails.getUser()));
     }
 }
