@@ -9,6 +9,7 @@ import com.zephsie.wellbeing.models.entity.VerificationToken;
 import com.zephsie.wellbeing.repositories.UserRepository;
 import com.zephsie.wellbeing.repositories.VerificationTokenRepository;
 import com.zephsie.wellbeing.services.api.IAuthenticationService;
+import com.zephsie.wellbeing.utils.exceptions.IllegalStateException;
 import com.zephsie.wellbeing.utils.exceptions.InvalidCredentialException;
 import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
@@ -72,7 +73,7 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         if (user.getIsActive()) {
-            throw new ValidationException("User with email " + verificationDTO.getEmail() + " already verified");
+            throw new IllegalStateException("User with email " + verificationDTO.getEmail() + " already verified");
         }
 
         VerificationToken verificationTokenFromDb = verificationTokenRepository.findByUser(user)
@@ -101,7 +102,7 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         if (userFromDB.getIsActive()) {
-            throw new ValidationException("User already verified");
+            throw new IllegalStateException("User already verified");
         }
 
         verificationTokenRepository.deleteByUser(userFromDB);

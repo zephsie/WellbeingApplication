@@ -1,6 +1,7 @@
 package com.zephsie.wellbeing.configs.exceptions;
 
 import com.zephsie.wellbeing.utils.exceptions.*;
+import com.zephsie.wellbeing.utils.exceptions.IllegalStateException;
 import com.zephsie.wellbeing.utils.responses.MultipleErrorResponse;
 import com.zephsie.wellbeing.utils.responses.SingleErrorResponse;
 import com.zephsie.wellbeing.utils.responses.api.ErrorResponse;
@@ -46,7 +47,9 @@ public class ExceptionHandlingConfig {
                 Map.entry(HttpRequestMethodNotSupportedException.class, e ->
                         ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(new SingleErrorResponse("error", "Method not allowed"))),
                 Map.entry(HttpMediaTypeNotSupportedException.class, e ->
-                        ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(new SingleErrorResponse("error", "Unsupported media type")))
+                        ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(new SingleErrorResponse("error", "Unsupported media type"))),
+                Map.entry(IllegalStateException.class, e ->
+                        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SingleErrorResponse("error", e.getMessage())))
         );
     }
 
