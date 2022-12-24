@@ -17,6 +17,4 @@ public interface IProductService {
     Page<Product> read(int page, int size);
 
     Product update(UUID id, ProductDTO productDTO, LocalDateTime version, User user);
-
-    void delete(UUID id, LocalDateTime version, User user);
 }

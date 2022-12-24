@@ -1,10 +1,10 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.zephsie.wellbeing.dtos.ProductDTO;
-import com.zephsie.wellbeing.models.entity.Product;
+import com.zephsie.wellbeing.dtos.RecipeDTO;
+import com.zephsie.wellbeing.models.entity.Recipe;
 import com.zephsie.wellbeing.security.UserDetailsImp;
-import com.zephsie.wellbeing.services.api.IProductService;
+import com.zephsie.wellbeing.services.api.IRecipeService;
 import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
@@ -22,72 +22,72 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/products")
-public class ProductController {
+@RequestMapping("/api/recipes")
+public class RecipeController {
 
-    private final IProductService productService;
+    private final IRecipeService recipeService;
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
     private final ErrorsToMapConverter errorsToMapConverter;
 
     @Autowired
-    public ProductController(IProductService productService,
-                             UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
-                             ErrorsToMapConverter errorsToMapConverter) {
+    public RecipeController(IRecipeService recipeService,
+                            UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
+                            ErrorsToMapConverter errorsToMapConverter) {
 
-        this.productService = productService;
+        this.recipeService = recipeService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
         this.errorsToMapConverter = errorsToMapConverter;
     }
 
-    @JsonView(EntityView.System.class)
     @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<Product> read(@PathVariable("id") UUID id) {
+    @JsonView(EntityView.WithMappings.class)
+    public ResponseEntity<Recipe> read(@PathVariable("id") UUID id) {
 
-        return productService.read(id)
+        return recipeService.read(id)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Recipe with id " + id + " not found"));
     }
 
-    @JsonView(EntityView.System.class)
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Product> create(@RequestBody @Valid ProductDTO productDTO,
-                                          BindingResult bindingResult,
-                                          @AuthenticationPrincipal UserDetailsImp userDetails) {
+    @JsonView(EntityView.WithMappings.class)
+    public ResponseEntity<Recipe> create(@RequestBody @Valid RecipeDTO recipeDTO,
+                                         BindingResult bindingResult,
+                                         @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (bindingResult.hasErrors()) {
             throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
-        return ResponseEntity.ok(productService.create(productDTO, userDetails.getUser()));
+        return ResponseEntity.ok(recipeService.create(recipeDTO, userDetails.getUser()));
     }
 
-    @JsonView(EntityView.System.class)
     @GetMapping(produces = "application/json")
-    public ResponseEntity<Page<Product>> read(@RequestParam(value = "page", defaultValue = "0") int page,
-                                              @RequestParam(value = "size", defaultValue = "10") int size) {
+    @JsonView(EntityView.WithMappings.class)
+    public ResponseEntity<Page<Recipe>> read(@RequestParam(value = "page", defaultValue = "0") int page,
+                                             @RequestParam(value = "size", defaultValue = "10") int size) {
 
         if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(productService.read(page, size));
+        return ResponseEntity.ok(recipeService.read(page, size));
     }
 
-    @JsonView(EntityView.System.class)
     @PutMapping(value = "/{id}/version/{version}", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Product> update(@PathVariable("id") UUID id,
-                                          @PathVariable("version") long version,
-                                          @RequestBody @Valid ProductDTO productDTO,
-                                          BindingResult bindingResult,
-                                          @AuthenticationPrincipal UserDetailsImp userDetails) {
+    @JsonView(EntityView.WithMappings.class)
+    public ResponseEntity<Recipe> update(@PathVariable("id") UUID id,
+                                         @PathVariable("version") long version,
+                                         @RequestBody @Valid RecipeDTO recipeDTO,
+                                         BindingResult bindingResult,
+                                         @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (bindingResult.hasErrors()) {
             throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
         }
 
-        return ResponseEntity.ok(productService.update(id, productDTO,
+        return ResponseEntity.ok(recipeService.update(id, recipeDTO,
                 unixTimeToLocalDateTimeConverter.convert(version), userDetails.getUser()));
     }
 }

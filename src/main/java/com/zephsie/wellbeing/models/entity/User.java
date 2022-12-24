@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.zephsie.wellbeing.models.api.IBaseEntity;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeDesSerializer;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeSerializer;
-import com.zephsie.wellbeing.utils.views.UserView;
+import com.zephsie.wellbeing.utils.views.EntityView;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.UUID;
 )
 @DynamicUpdate
 @NoArgsConstructor
-@JsonView(UserView.class)
+@JsonView(EntityView.class)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements IBaseEntity<UUID> {
 
@@ -36,21 +36,21 @@ public class User implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(UserView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private UUID id;
 
     @Column(name = "username", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(UserView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private String username;
 
     @Column(name = "email", nullable = false, unique = true)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(UserView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -63,7 +63,7 @@ public class User implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(UserView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -71,7 +71,7 @@ public class User implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(UserView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Boolean isActive;
 
     @Version
@@ -80,7 +80,7 @@ public class User implements IBaseEntity<UUID> {
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @Getter
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     private LocalDateTime version;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
@@ -89,6 +89,6 @@ public class User implements IBaseEntity<UUID> {
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     private LocalDateTime createDate;
 }

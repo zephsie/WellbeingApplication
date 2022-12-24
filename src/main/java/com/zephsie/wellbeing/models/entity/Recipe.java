@@ -1,10 +1,13 @@
 package com.zephsie.wellbeing.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.zephsie.wellbeing.models.api.IBaseEntity;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeDesSerializer;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeSerializer;
+import com.zephsie.wellbeing.utils.views.EntityView;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +23,21 @@ import java.util.UUID;
 @Table(name = "recipe", schema = "structure")
 @DynamicUpdate
 @NoArgsConstructor
+@JsonView(EntityView.class)
+@NamedEntityGraph
+        (
+                name = "recipeWithCompositionsAndProducts",
+                attributeNodes =
+                        {
+                                @NamedAttributeNode("composition"),
+                                @NamedAttributeNode(value = "composition", subgraph = "compositionWithProduct"),
+                        },
+                subgraphs = @NamedSubgraph
+                        (
+                                name = "compositionWithProduct",
+                                attributeNodes = @NamedAttributeNode("product")
+                        )
+        )
 public class Recipe implements IBaseEntity<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,30 +45,28 @@ public class Recipe implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
+    @JsonView(EntityView.Base.class)
     private UUID id;
 
     @Column(name = "title", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
+    @JsonView(EntityView.Base.class)
     private String title;
 
-    @Column(name = "weight", nullable = false)
-    @Access(AccessType.PROPERTY)
+    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @Getter
     @Setter
-    private Integer weight;
-
-    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.EAGER)
-    @Getter
-    @Setter
-    private List<Composition> compositions;
+    @JsonView(EntityView.WithMappings.class)
+    private List<Composition> composition;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", updatable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
+    @JsonIgnore
     private User user;
 
     @Version
@@ -59,6 +75,7 @@ public class Recipe implements IBaseEntity<UUID> {
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @Getter
+    @JsonView(EntityView.System.class)
     private LocalDateTime version;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
@@ -67,5 +84,6 @@ public class Recipe implements IBaseEntity<UUID> {
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
+    @JsonView(EntityView.System.class)
     private LocalDateTime createDate;
 }

@@ -76,22 +76,4 @@ public class ProductService implements IProductService {
 
         return productRepository.save(existingProduct);
     }
-
-    @Override
-    @Transactional
-    public void delete(UUID id, LocalDateTime version, User user) {
-        Optional<Product> optionalProduct = productRepository.findById(id);
-
-        Product existingProduct = optionalProduct.orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
-
-        if (!existingProduct.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("You are not allowed to delete this product");
-        }
-
-        if (!existingProduct.getVersion().equals(version)) {
-            throw new WrongVersionException("Product with id " + id + " has been updated");
-        }
-
-        productRepository.delete(existingProduct);
-    }
 }

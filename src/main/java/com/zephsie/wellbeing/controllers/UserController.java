@@ -8,7 +8,7 @@ import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
-import com.zephsie.wellbeing.utils.views.UserView;
+import com.zephsie.wellbeing.utils.views.EntityView;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,13 +37,13 @@ public class UserController {
     }
 
     @GetMapping(value = "/me", produces = "application/json")
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     public ResponseEntity<User> read(@AuthenticationPrincipal UserDetailsImp userDetailsImp) {
         return ResponseEntity.ok(userDetailsImp.getUser());
     }
 
     @PutMapping(value = "/me/version/{version}", consumes = "application/json", produces = "application/json")
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     public ResponseEntity<User> update(@PathVariable("version") long version,
                                        @RequestBody @Valid UserDTO userDTO,
                                        BindingResult bindingResult,

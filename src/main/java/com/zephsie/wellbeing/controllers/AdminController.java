@@ -7,7 +7,7 @@ import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
-import com.zephsie.wellbeing.utils.views.UserView;
+import com.zephsie.wellbeing.utils.views.EntityView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +24,15 @@ public class AdminController {
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
     @Autowired
-    public AdminController(IUserService userService, UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter) {
+    public AdminController(IUserService userService,
+                           UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter) {
+
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
     }
 
     @PutMapping(value = "/{id}/role/{role}/version/{version}", produces = "application/json")
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     public ResponseEntity<User> updateRole(@PathVariable("id") UUID id,
                                            @PathVariable("role") Role role,
                                            @PathVariable("version") long version) {
@@ -39,7 +41,7 @@ public class AdminController {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     public ResponseEntity<User> read(@PathVariable("id") UUID id) {
 
         return userService.read(id).map(ResponseEntity::ok)
@@ -47,7 +49,7 @@ public class AdminController {
     }
 
     @GetMapping(produces = "application/json")
-    @JsonView(UserView.System.class)
+    @JsonView(EntityView.System.class)
     public ResponseEntity<Page<User>> read(@RequestParam(value = "page", defaultValue = "0") int page,
                                            @RequestParam(value = "size", defaultValue = "10") int size) {
 

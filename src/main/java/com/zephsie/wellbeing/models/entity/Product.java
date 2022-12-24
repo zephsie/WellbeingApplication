@@ -1,5 +1,6 @@
 package com.zephsie.wellbeing.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -7,7 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.zephsie.wellbeing.models.api.IBaseEntity;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeDesSerializer;
 import com.zephsie.wellbeing.utils.serializers.CustomLocalDateTimeSerializer;
-import com.zephsie.wellbeing.utils.views.ProductView;
+import com.zephsie.wellbeing.utils.views.EntityView;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @DynamicUpdate
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@JsonView(ProductView.class)
+@JsonView(EntityView.class)
 public class Product implements IBaseEntity<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,49 +32,49 @@ public class Product implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private UUID id;
 
     @Column(name = "title", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private String title;
 
     @Column(name = "weight", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Integer weight;
 
     @Column(name = "calories", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Integer calories;
 
     @Column(name = "proteins", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Double proteins;
 
     @Column(name = "fats", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Double fats;
 
     @Column(name = "carbohydrates", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Minimal.class)
+    @JsonView(EntityView.Base.class)
     private Double carbohydrates;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY)
@@ -81,7 +82,7 @@ public class Product implements IBaseEntity<UUID> {
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
-    @JsonView(ProductView.Full.class)
+    @JsonIgnore
     private User user;
 
     @Version
@@ -90,7 +91,7 @@ public class Product implements IBaseEntity<UUID> {
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @Getter
-    @JsonView(ProductView.System.class)
+    @JsonView(EntityView.System.class)
     private LocalDateTime version;
 
     @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
@@ -99,6 +100,6 @@ public class Product implements IBaseEntity<UUID> {
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
-    @JsonView(ProductView.System.class)
+    @JsonView(EntityView.System.class)
     private LocalDateTime createDate;
 }

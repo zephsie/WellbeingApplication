@@ -36,7 +36,7 @@ public class WellbeingApplication {
     @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
-            UserDTO userDTO = new UserDTO("admin@admin.admin", "admin", "admin");
+            UserDTO userDTO = new UserDTO("admin", "admin@admin.admin", "admin");
 
             try {
                 User user = authenticationService.register(userDTO).getUser();

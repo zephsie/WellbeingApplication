@@ -20,6 +20,7 @@ public class GlobalControllerExceptionHandler {
     @Autowired
     public GlobalControllerExceptionHandler(Map<Class<? extends Exception>, Function<Exception, ResponseEntity<ErrorResponse>>> exceptionHandlers,
                                             Function<Exception, ResponseEntity<ErrorResponse>> defaultHandler) {
+
         this.exceptionHandlers = exceptionHandlers;
         this.defaultHandler = defaultHandler;
     }
