@@ -20,10 +20,10 @@ public class PageSerializer extends StdSerializer<Page> {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeNumberField("number", page.getNumber());
         jsonGenerator.writeNumberField("size", page.getSize());
-        jsonGenerator.writeNumberField("total_pages", page.getTotalPages());
-        jsonGenerator.writeNumberField("total_elements", page.getTotalElements());
+        jsonGenerator.writeNumberField("totalPages", page.getTotalPages());
+        jsonGenerator.writeNumberField("totalElements", page.getTotalElements());
         jsonGenerator.writeBooleanField("first", page.isFirst());
-        jsonGenerator.writeNumberField("number_of_elements", page.getNumberOfElements());
+        jsonGenerator.writeNumberField("numberOfElements", page.getNumberOfElements());
         jsonGenerator.writeBooleanField("last", page.isLast());
         jsonGenerator.writeFieldName("content");
         serializerProvider.defaultSerializeValue(page.getContent(), jsonGenerator);
