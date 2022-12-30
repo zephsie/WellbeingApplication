@@ -12,9 +12,9 @@ import java.util.UUID;
 public interface IProductService {
     Product create(ProductDTO productDTO, User user);
 
-    Optional<Product> read(UUID id);
+    Optional<Product> read(UUID id, User user);
 
-    Page<Product> read(int page, int size);
+    Page<Product> read(int page, int size, User user);
 
     Product update(UUID id, ProductDTO productDTO, LocalDateTime version, User user);
 }

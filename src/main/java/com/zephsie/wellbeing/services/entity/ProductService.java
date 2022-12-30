@@ -11,7 +11,6 @@ import com.zephsie.wellbeing.utils.exceptions.WrongVersionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +32,14 @@ public class ProductService implements IProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Product> read(UUID id) {
-        return productRepository.findById(id);
+    public Optional<Product> read(UUID id, User user) {
+        return productRepository.findByIdAndUser(id, user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Product> read(int page, int size) {
-        return productRepository.findAll(Pageable.ofSize(size).withPage(page));
+    public Page<Product> read(int page, int size, User user) {
+        return productRepository.findAllByUser(Pageable.ofSize(size).withPage(page), user);
     }
 
     @Override
@@ -55,13 +54,9 @@ public class ProductService implements IProductService {
     @Override
     @Transactional
     public Product update(UUID id, ProductDTO productDTO, LocalDateTime version, User user) {
-        Optional<Product> optionalProduct = productRepository.findById(id);
+        Optional<Product> optionalProduct = productRepository.findByIdAndUser(id, user);
 
         Product existingProduct = optionalProduct.orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
-
-        if (!existingProduct.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("You are not allowed to update this product");
-        }
 
         if (!existingProduct.getDtUpdate().equals(version)) {
             throw new WrongVersionException("Product with id " + id + " has been updated");

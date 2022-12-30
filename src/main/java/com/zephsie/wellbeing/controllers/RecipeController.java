@@ -42,9 +42,10 @@ public class RecipeController {
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @JsonView(EntityView.WithMappings.class)
-    public ResponseEntity<Recipe> read(@PathVariable("id") UUID id) {
+    public ResponseEntity<Recipe> read(@PathVariable("id") UUID id,
+                                       @AuthenticationPrincipal UserDetailsImp userDetails) {
 
-        return recipeService.read(id)
+        return recipeService.read(id, userDetails.getUser())
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new NotFoundException("Recipe with id " + id + " not found"));
     }
@@ -68,12 +69,13 @@ public class RecipeController {
     @GetMapping(produces = "application/json")
     @JsonView(EntityView.WithMappings.class)
     public ResponseEntity<Page<Recipe>> read(@RequestParam(value = "page", defaultValue = "0") int page,
-                                             @RequestParam(value = "size", defaultValue = "10") int size) {
+                                             @RequestParam(value = "size", defaultValue = "10") int size,
+                                             @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(recipeService.read(page, size));
+        return ResponseEntity.ok(recipeService.read(page, size, userDetails.getUser()));
     }
 }

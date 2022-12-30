@@ -44,9 +44,10 @@ public class ProductController {
 
     @JsonView(EntityView.System.class)
     @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<Product> read(@PathVariable("id") UUID id) {
+    public ResponseEntity<Product> read(@PathVariable("id") UUID id,
+                                        @AuthenticationPrincipal UserDetailsImp userDetails) {
 
-        return productService.read(id)
+        return productService.read(id, userDetails.getUser())
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
     }
@@ -67,13 +68,14 @@ public class ProductController {
     @JsonView(EntityView.System.class)
     @GetMapping(produces = "application/json")
     public ResponseEntity<Page<Product>> read(@RequestParam(value = "page", defaultValue = "0") int page,
-                                              @RequestParam(value = "size", defaultValue = "10") int size) {
+                                              @RequestParam(value = "size", defaultValue = "10") int size,
+                                              @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(productService.read(page, size));
+        return ResponseEntity.ok(productService.read(page, size, userDetails.getUser()));
     }
 
     @JsonView(EntityView.System.class)

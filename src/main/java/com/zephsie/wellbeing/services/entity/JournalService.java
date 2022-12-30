@@ -65,12 +65,12 @@ public class JournalService implements IJournalService {
     }
 
     @Override
-    public Optional<Journal> read(UUID id) {
-        return journalRepository.findById(id);
+    public Optional<Journal> read(UUID id, User user) {
+        return journalRepository.findByIdAndUser(id, user);
     }
 
     @Override
-    public Page<Journal> read(int page, int size) {
-        return journalRepository.findAll(Pageable.ofSize(size).withPage(page));
+    public Page<Journal> read(int page, int size, User user) {
+        return journalRepository.findAllByUser(Pageable.ofSize(size).withPage(page), user);
     }
 }

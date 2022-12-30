@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface IRecipeService {
     Recipe create(RecipeDTO recipeDTO, User user);
 
-    Optional<Recipe> read(UUID id);
+    Optional<Recipe> read(UUID id, User user);
 
-    Page<Recipe> read(int page, int size);
+    Page<Recipe> read(int page, int size, User user);
 }

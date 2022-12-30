@@ -13,7 +13,7 @@ public interface IJournalService {
 
     Journal createWithRecipe(JournalDTO journalDTO, User user);
 
-    Optional<Journal> read(UUID id);
+    Optional<Journal> read(UUID id, User user);
 
-    Page<Journal> read(int page, int size);
+    Page<Journal> read(int page, int size, User user);
 }

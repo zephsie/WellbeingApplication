@@ -40,9 +40,10 @@ public class JournalController {
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @JsonView(EntityView.WithMappings.class)
-    public ResponseEntity<Journal> read(@PathVariable("id") UUID id) {
+    public ResponseEntity<Journal> read(@PathVariable("id") UUID id,
+                                        @AuthenticationPrincipal UserDetailsImp userDetails) {
 
-        return journalService.read(id)
+        return journalService.read(id, userDetails.getUser())
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new NotFoundException("Journal with id " + id + " not found"));
     }
@@ -68,12 +69,13 @@ public class JournalController {
     @GetMapping(produces = "application/json")
     @JsonView(EntityView.WithMappings.class)
     public ResponseEntity<Page<Journal>> read(@RequestParam(value = "page", defaultValue = "0") int page,
-                                              @RequestParam(value = "size", defaultValue = "10") int size) {
+                                              @RequestParam(value = "size", defaultValue = "10") int size,
+                                              @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (page < 0 || size <= 0) {
             throw new IllegalPaginationValuesException("Pagination values are not correct");
         }
 
-        return ResponseEntity.ok(journalService.read(page, size));
+        return ResponseEntity.ok(journalService.read(page, size, userDetails.getUser()));
     }
 }

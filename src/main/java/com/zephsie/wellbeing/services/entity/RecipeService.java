@@ -60,13 +60,13 @@ public class RecipeService implements IRecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Recipe> read(UUID id) {
-        return recipeRepository.findById(id);
+    public Optional<Recipe> read(UUID id, User user) {
+        return recipeRepository.findByIdAndUser(id, user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Recipe> read(int page, int size) {
-        return recipeRepository.findAll(Pageable.ofSize(size).withPage(page));
+    public Page<Recipe> read(int page, int size, User user) {
+        return recipeRepository.findAllByUser(Pageable.ofSize(size).withPage(page), user);
     }
 }
