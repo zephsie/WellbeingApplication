@@ -40,8 +40,6 @@ public class ExceptionHandlingConfig {
                         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new SingleErrorResponse("error", e.getMessage()))),
                 Map.entry(AccessDeniedException.class, e ->
                         ResponseEntity.status(HttpStatus.FORBIDDEN).body(new SingleErrorResponse("error", e.getMessage()))),
-                Map.entry(BasicFieldValidationException.class, e -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new MultipleErrorResponse("error", ((BasicFieldValidationException) e).getErrors()))),
                 Map.entry(MethodArgumentTypeMismatchException.class, e ->
                         ResponseEntity.badRequest().body(new SingleErrorResponse("error", "Invalid values passed"))),
                 Map.entry(HttpRequestMethodNotSupportedException.class, e ->
@@ -49,7 +47,9 @@ public class ExceptionHandlingConfig {
                 Map.entry(HttpMediaTypeNotSupportedException.class, e ->
                         ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(new SingleErrorResponse("error", "Unsupported media type"))),
                 Map.entry(IllegalStateException.class, e ->
-                        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SingleErrorResponse("error", e.getMessage())))
+                        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SingleErrorResponse("error", e.getMessage()))),
+                Map.entry(BasicFieldValidationException.class, e -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new MultipleErrorResponse("error", ((BasicFieldValidationException) e).getErrors())))
         );
     }
 
