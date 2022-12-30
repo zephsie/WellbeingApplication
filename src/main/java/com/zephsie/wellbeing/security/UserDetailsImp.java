@@ -1,6 +1,6 @@
 package com.zephsie.wellbeing.security;
 
-import com.zephsie.wellbeing.models.entity.Role;
+import com.zephsie.wellbeing.models.entity.Status;
 import com.zephsie.wellbeing.models.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,6 +49,6 @@ public class UserDetailsImp implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getIsActive() || user.getRole() == Role.ROLE_ADMIN;
+        return user.getStatus() == Status.ACTIVE;
     }
 }

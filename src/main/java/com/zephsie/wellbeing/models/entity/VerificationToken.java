@@ -34,18 +34,18 @@ public class VerificationToken implements IImmutableEntity<UUID> {
     @NotEmpty(message = "Token cannot be empty")
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST})
     @JoinColumn(nullable = false, name = "user_id", updatable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     private User user;
 
-    @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
+    @Column(name = "dt_create", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
     @CreationTimestamp
     @Getter
-    private LocalDateTime createDate;
+    private LocalDateTime dtCreate;
 
     public VerificationToken(String token, User user) {
         this.token = token;

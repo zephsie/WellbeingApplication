@@ -67,28 +67,29 @@ public class User implements IBaseEntity<UUID> {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "status", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
     @Setter
     @JsonView(EntityView.Base.class)
-    private Boolean isActive;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Version
-    @Column(name = "version", columnDefinition = "TIMESTAMP", precision = 3)
+    @Column(name = "dt_update", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @Getter
     @JsonView(EntityView.System.class)
-    private LocalDateTime version;
+    private LocalDateTime dtUpdate;
 
-    @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
+    @Column(name = "dt_create", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
     @JsonView(EntityView.System.class)
-    private LocalDateTime createDate;
+    private LocalDateTime dtCreate;
 }

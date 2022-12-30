@@ -22,9 +22,4 @@ public class UserLoginDTOConverter implements IEntityDTOConverter<User, LoginDTO
     public User convertToEntity(LoginDTO dto) {
         return objectMapper.convertValue(dto, User.class);
     }
-
-    @Override
-    public LoginDTO convertToDTO(User entity) {
-        return objectMapper.convertValue(entity, LoginDTO.class);
-    }
 }

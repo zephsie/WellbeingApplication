@@ -1,7 +1,5 @@
 package com.zephsie.wellbeing.services.entity;
 
-import com.zephsie.wellbeing.dtos.CompositionDTO;
-import com.zephsie.wellbeing.dtos.MinProductDTO;
 import com.zephsie.wellbeing.dtos.RecipeDTO;
 import com.zephsie.wellbeing.models.entity.Composition;
 import com.zephsie.wellbeing.models.entity.Product;
@@ -37,30 +35,25 @@ public class RecipeService implements IRecipeService {
     @Override
     @Transactional
     public Recipe create(RecipeDTO recipeDTO, User user) {
-        List<Product> products = productRepository.findAllById(recipeDTO.getComposition()
-                .stream().map(CompositionDTO::getProduct)
-                .map(MinProductDTO::getUuid)
-                .toList());
-
-        if (products.size() != recipeDTO.getComposition().size()) {
-            throw new NotFoundException("Not all products are found");
-        }
+        List<Product> products = recipeDTO
+                .getComposition()
+                .stream()
+                .map(compositionDTO -> productRepository
+                        .findById(compositionDTO.getProduct().getId())
+                        .orElseThrow(() -> new NotFoundException("Product with id " + compositionDTO.getProduct().getId() + " not found")))
+                .toList();
 
         Recipe recipe = new Recipe();
         recipe.setUser(user);
         recipe.setTitle(recipeDTO.getTitle());
 
-        List<Composition> compositions = IntStream.range(0, products.size())
-                .mapToObj(i -> {
+        IntStream.range(0, products.size())
+                .forEach(i -> {
                     Composition composition = new Composition();
                     composition.setProduct(products.get(i));
                     composition.setWeight(recipeDTO.getComposition().get(i).getWeight());
-                    composition.setRecipe(recipe);
-                    return composition;
-                })
-                .toList();
-
-        recipe.setComposition(compositions);
+                    recipe.addComposition(composition);
+                });
 
         return recipeRepository.save(recipe);
     }

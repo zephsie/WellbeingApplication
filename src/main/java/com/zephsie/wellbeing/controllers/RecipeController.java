@@ -5,20 +5,23 @@ import com.zephsie.wellbeing.dtos.RecipeDTO;
 import com.zephsie.wellbeing.models.entity.Recipe;
 import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IRecipeService;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
+import com.zephsie.wellbeing.utils.groups.CompositionListSequence;
+import com.zephsie.wellbeing.utils.groups.RecipeDTOSequence;
 import com.zephsie.wellbeing.utils.views.EntityView;
-import jakarta.validation.Valid;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -27,14 +30,14 @@ public class RecipeController {
 
     private final IRecipeService recipeService;
 
-    private final ErrorsToMapConverter errorsToMapConverter;
+    private final Validator validator;
 
     @Autowired
     public RecipeController(IRecipeService recipeService,
-                            ErrorsToMapConverter errorsToMapConverter) {
+                            Validator validator) {
 
         this.recipeService = recipeService;
-        this.errorsToMapConverter = errorsToMapConverter;
+        this.validator = validator;
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
@@ -48,12 +51,15 @@ public class RecipeController {
 
     @PostMapping(consumes = "application/json", produces = "application/json")
     @JsonView(EntityView.WithMappings.class)
-    public ResponseEntity<Recipe> create(@RequestBody @Valid RecipeDTO recipeDTO,
-                                         BindingResult bindingResult,
+    public ResponseEntity<Recipe> create(@RequestBody RecipeDTO recipeDTO,
                                          @AuthenticationPrincipal UserDetailsImp userDetails) {
 
-        if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+        Set<ConstraintViolation<RecipeDTO>> set = validator
+                .validate(recipeDTO, CompositionListSequence.class, RecipeDTOSequence.class);
+
+        if (!set.isEmpty()) {
+            throw new BasicFieldValidationException(set.stream()
+                    .collect(HashMap::new, (m, v) -> m.put(v.getPropertyPath().toString(), v.getMessage()), HashMap::putAll));
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(recipeService.create(recipeDTO, userDetails.getUser()));

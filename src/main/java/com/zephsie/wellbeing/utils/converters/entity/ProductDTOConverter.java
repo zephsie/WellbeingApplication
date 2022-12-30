@@ -21,9 +21,4 @@ public class ProductDTOConverter implements IEntityDTOConverter<Product, Product
     public Product convertToEntity(ProductDTO dto) {
         return objectMapper.convertValue(dto, Product.class);
     }
-
-    @Override
-    public ProductDTO convertToDTO(Product entity) {
-        return objectMapper.convertValue(entity, ProductDTO.class);
-    }
 }

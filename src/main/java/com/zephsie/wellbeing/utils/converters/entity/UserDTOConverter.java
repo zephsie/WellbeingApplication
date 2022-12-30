@@ -17,11 +17,8 @@ public class UserDTOConverter implements IEntityDTOConverter<User, UserDTO> {
         this.objectMapper = objectMapper;
     }
 
-    public User convertToEntity(UserDTO userDTO) {
-        return objectMapper.convertValue(userDTO, User.class);
-    }
-
-    public UserDTO convertToDTO(User user) {
-        return objectMapper.convertValue(user, UserDTO.class);
+    @Override
+    public User convertToEntity(UserDTO UserDTO) {
+        return objectMapper.convertValue(UserDTO, User.class);
     }
 }

@@ -7,7 +7,7 @@ public interface IBaseEntity<ID> {
 
     void setId(ID id);
 
-    LocalDateTime getVersion();
+    LocalDateTime getDtUpdate();
 
-    LocalDateTime getCreateDate();
+    LocalDateTime getDtCreate();
 }

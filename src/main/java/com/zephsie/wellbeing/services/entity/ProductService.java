@@ -63,7 +63,7 @@ public class ProductService implements IProductService {
             throw new AccessDeniedException("You are not allowed to update this product");
         }
 
-        if (!existingProduct.getVersion().equals(version)) {
+        if (!existingProduct.getDtUpdate().equals(version)) {
             throw new WrongVersionException("Product with id " + id + " has been updated");
         }
 

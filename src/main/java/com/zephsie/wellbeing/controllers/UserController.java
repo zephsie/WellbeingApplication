@@ -1,11 +1,11 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.zephsie.wellbeing.dtos.UserDTO;
+import com.zephsie.wellbeing.dtos.NewUserDTO;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IUserService;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
+import com.zephsie.wellbeing.utils.converters.FieldErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.views.EntityView;
@@ -25,16 +25,16 @@ public class UserController {
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
-    private final ErrorsToMapConverter errorsToMapConverter;
+    private final FieldErrorsToMapConverter fieldErrorsToMapConverter;
 
     @Autowired
     public UserController(IUserService userService,
                           UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
-                          ErrorsToMapConverter errorsToMapConverter) {
+                          FieldErrorsToMapConverter fieldErrorsToMapConverter) {
 
         this.userService = userService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
-        this.errorsToMapConverter = errorsToMapConverter;
+        this.fieldErrorsToMapConverter = fieldErrorsToMapConverter;
     }
 
     @GetMapping(value = "/me", produces = "application/json")
@@ -46,15 +46,15 @@ public class UserController {
     @PutMapping(value = "/me/version/{version}", consumes = "application/json", produces = "application/json")
     @JsonView(EntityView.System.class)
     public ResponseEntity<User> update(@PathVariable("version") long version,
-                                       @RequestBody @Valid UserDTO userDTO,
+                                       @RequestBody @Valid NewUserDTO newUserDTO,
                                        BindingResult bindingResult,
                                        @AuthenticationPrincipal UserDetailsImp userDetailsImp) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
-        return ResponseEntity.ok(userService.update(userDetailsImp.getUser().getId(), userDTO,
+        return ResponseEntity.ok(userService.update(userDetailsImp.getUser().getId(), newUserDTO,
                 unixTimeToLocalDateTimeConverter.convert(version)));
     }
 

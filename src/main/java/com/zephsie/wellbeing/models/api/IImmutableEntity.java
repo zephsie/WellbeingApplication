@@ -7,5 +7,5 @@ public interface IImmutableEntity<ID> {
 
     void setId(ID id);
 
-    LocalDateTime getCreateDate();
+    LocalDateTime getDtCreate();
 }

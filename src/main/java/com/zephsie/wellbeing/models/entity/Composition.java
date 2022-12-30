@@ -39,7 +39,7 @@ public class Composition implements IImmutableEntity<UUID> {
     @JsonView(EntityView.Base.class)
     private Integer weight;
 
-    @ManyToOne(targetEntity = Product.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = Product.class)
     @JoinColumn(name = "product_id", nullable = false)
     @Access(AccessType.PROPERTY)
     @Getter
@@ -55,12 +55,12 @@ public class Composition implements IImmutableEntity<UUID> {
     @JsonView(EntityView.Full.class)
     private Recipe recipe;
 
-    @Column(name = "create_date", columnDefinition = "TIMESTAMP", precision = 3)
+    @Column(name = "dt_create", columnDefinition = "TIMESTAMP", precision = 3)
     @Access(AccessType.FIELD)
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     @JsonDeserialize(using = CustomLocalDateTimeDesSerializer.class)
     @CreationTimestamp
     @Getter
     @JsonView(EntityView.Full.class)
-    private LocalDateTime createDate;
+    private LocalDateTime dtCreate;
 }

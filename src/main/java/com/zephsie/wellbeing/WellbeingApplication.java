@@ -2,8 +2,7 @@ package com.zephsie.wellbeing;
 
 import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.models.entity.Role;
-import com.zephsie.wellbeing.models.entity.User;
-import com.zephsie.wellbeing.services.api.IAuthenticationService;
+import com.zephsie.wellbeing.models.entity.Status;
 import com.zephsie.wellbeing.services.api.IUserService;
 import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +20,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class WellbeingApplication {
     private final IUserService userService;
 
-    private final IAuthenticationService authenticationService;
-
     @Autowired
-    public WellbeingApplication(IUserService userService, IAuthenticationService authenticationService) {
+    public WellbeingApplication(IUserService userService) {
         this.userService = userService;
-        this.authenticationService = authenticationService;
     }
 
     public static void main(String[] args) {
@@ -36,11 +32,14 @@ public class WellbeingApplication {
     @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
-            UserDTO userDTO = new UserDTO("admin", "admin@admin.admin", "admin");
+            UserDTO userDTO = new UserDTO("admin",
+                    "admin@admin.admin",
+                    "admin",
+                    Role.ROLE_ADMIN,
+                    Status.ACTIVE);
 
             try {
-                User user = authenticationService.register(userDTO).getUser();
-                userService.updateRole(user.getId(), Role.ROLE_ADMIN, user.getVersion());
+                userService.create(userDTO);
                 log.info("Admin user created");
             } catch (NotUniqueException e) {
                 log.info("Admin user already exists");

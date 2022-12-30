@@ -17,9 +17,4 @@ public class VerificationTokenDTOConverter implements IEntityDTOConverter<Verifi
 
         return new VerificationToken(dto.getToken(), user);
     }
-
-    @Override
-    public VerificationDTO convertToDTO(VerificationToken entity) {
-        return new VerificationDTO(entity.getToken(), entity.getUser().getEmail(), entity.getUser().getPassword());
-    }
 }

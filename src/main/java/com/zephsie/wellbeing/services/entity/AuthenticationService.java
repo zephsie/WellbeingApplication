@@ -1,9 +1,10 @@
 package com.zephsie.wellbeing.services.entity;
 
 import com.zephsie.wellbeing.dtos.LoginDTO;
-import com.zephsie.wellbeing.dtos.UserDTO;
+import com.zephsie.wellbeing.dtos.NewUserDTO;
 import com.zephsie.wellbeing.dtos.VerificationDTO;
 import com.zephsie.wellbeing.models.entity.Role;
+import com.zephsie.wellbeing.models.entity.Status;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.models.entity.VerificationToken;
 import com.zephsie.wellbeing.repositories.UserRepository;
@@ -44,17 +45,17 @@ public class AuthenticationService implements IAuthenticationService {
 
     @Override
     @Transactional
-    public VerificationToken register(UserDTO userDTO) {
-        if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new NotUniqueException("User with email " + userDTO.getEmail() + " already exists");
+    public VerificationToken register(NewUserDTO newUserDTO) {
+        if (userRepository.existsByEmail(newUserDTO.getEmail())) {
+            throw new NotUniqueException("User with email " + newUserDTO.getEmail() + " already exists");
         }
 
         User user = new User();
-        user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setUsername(newUserDTO.getUsername());
+        user.setEmail(newUserDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(newUserDTO.getPassword()));
         user.setRole(Role.ROLE_USER);
-        user.setIsActive(false);
+        user.setStatus(Status.WAITING_ACTIVATION);
 
         VerificationToken verificationToken = new VerificationToken(randomTokenProvider.generate(), user);
         verificationTokenRepository.save(verificationToken);
@@ -72,7 +73,7 @@ public class AuthenticationService implements IAuthenticationService {
             throw new InvalidCredentialException("Invalid password");
         }
 
-        if (user.getIsActive()) {
+        if (user.getStatus() != Status.WAITING_ACTIVATION) {
             throw new IllegalStateException("User with email " + verificationDTO.getEmail() + " already verified");
         }
 
@@ -83,7 +84,7 @@ public class AuthenticationService implements IAuthenticationService {
             throw new InvalidCredentialException("Invalid verification token");
         }
 
-        user.setIsActive(true);
+        user.setStatus(Status.ACTIVE);
 
         verificationTokenRepository.delete(verificationTokenFromDb);
 
@@ -101,8 +102,8 @@ public class AuthenticationService implements IAuthenticationService {
             throw new InvalidCredentialException("Invalid password");
         }
 
-        if (userFromDB.getIsActive()) {
-            throw new IllegalStateException("User already verified");
+        if (userFromDB.getStatus() != Status.WAITING_ACTIVATION) {
+            throw new IllegalStateException("User with email " + loginDTO.getEmail() + " already verified");
         }
 
         verificationTokenRepository.deleteByUser(userFromDB);

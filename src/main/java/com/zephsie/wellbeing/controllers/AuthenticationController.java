@@ -1,7 +1,7 @@
 package com.zephsie.wellbeing.controllers;
 
 import com.zephsie.wellbeing.dtos.LoginDTO;
-import com.zephsie.wellbeing.dtos.UserDTO;
+import com.zephsie.wellbeing.dtos.NewUserDTO;
 import com.zephsie.wellbeing.dtos.VerificationDTO;
 import com.zephsie.wellbeing.events.OnRegistrationCompleteEvent;
 import com.zephsie.wellbeing.models.entity.User;
@@ -9,13 +9,14 @@ import com.zephsie.wellbeing.models.entity.VerificationToken;
 import com.zephsie.wellbeing.security.jwt.JwtUtil;
 import com.zephsie.wellbeing.services.api.IAuthenticationService;
 import com.zephsie.wellbeing.services.entity.UserDetailsServiceImpl;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
+import com.zephsie.wellbeing.utils.converters.FieldErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.exceptions.InvalidCredentialException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,7 +41,7 @@ public class AuthenticationController {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    private final ErrorsToMapConverter errorsToMapConverter;
+    private final FieldErrorsToMapConverter fieldErrorsToMapConverter;
 
     @Autowired
     public AuthenticationController(AuthenticationManager authenticationManager,
@@ -48,26 +49,28 @@ public class AuthenticationController {
                                     IAuthenticationService authenticationService,
                                     JwtUtil jwtUtil,
                                     ApplicationEventPublisher eventPublisher,
-                                    ErrorsToMapConverter errorsToMapConverter) {
+                                    FieldErrorsToMapConverter fieldErrorsToMapConverter) {
 
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.authenticationService = authenticationService;
         this.jwtUtil = jwtUtil;
         this.eventPublisher = eventPublisher;
-        this.errorsToMapConverter = errorsToMapConverter;
+        this.fieldErrorsToMapConverter = fieldErrorsToMapConverter;
     }
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody @Valid LoginDTO loginDTO,
+                                                     BindingResult bindingResult) {
+
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
         } catch (DisabledException e) {
-            throw new InvalidCredentialException("User is disabled");
+            throw new AccessDeniedException("User is disabled");
         } catch (AuthenticationException e) {
             throw new InvalidCredentialException("Invalid credentials");
         }
@@ -79,11 +82,11 @@ public class AuthenticationController {
     }
 
     @PostMapping(value = "/registration", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Map<String, String>> register(@RequestBody @Valid UserDTO personDTO,
+    public ResponseEntity<Map<String, String>> register(@RequestBody @Valid NewUserDTO personDTO,
                                                         BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         VerificationToken verificationToken = authenticationService.register(personDTO);
@@ -98,7 +101,7 @@ public class AuthenticationController {
                                                       BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         User user = authenticationService.verifyUser(verificationDTO);
@@ -115,7 +118,7 @@ public class AuthenticationController {
                                                        BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         VerificationToken verificationToken = authenticationService.refreshVerificationToken(loginDTO);

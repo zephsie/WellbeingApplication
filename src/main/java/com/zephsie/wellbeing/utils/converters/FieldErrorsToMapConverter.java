@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class ErrorsToMapConverter {
+public class FieldErrorsToMapConverter {
     public Map<String, String> map(Errors errors) {
         Map<String, String> messages = new HashMap<>();
         errors.getFieldErrors().forEach(error -> messages.put(error.getField(), error.getDefaultMessage()));

@@ -1,10 +1,13 @@
 package com.zephsie.wellbeing.services.entity;
 
+import com.zephsie.wellbeing.dtos.NewUserDTO;
 import com.zephsie.wellbeing.dtos.UserDTO;
 import com.zephsie.wellbeing.models.entity.Role;
+import com.zephsie.wellbeing.models.entity.Status;
 import com.zephsie.wellbeing.models.entity.User;
 import com.zephsie.wellbeing.repositories.UserRepository;
 import com.zephsie.wellbeing.services.api.IUserService;
+import com.zephsie.wellbeing.utils.converters.api.IEntityDTOConverter;
 import com.zephsie.wellbeing.utils.exceptions.NotFoundException;
 import com.zephsie.wellbeing.utils.exceptions.NotUniqueException;
 import com.zephsie.wellbeing.utils.exceptions.ValidationException;
@@ -26,10 +29,27 @@ public class UserService implements IUserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final IEntityDTOConverter<User, UserDTO> userDTOConverter;
+
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, IEntityDTOConverter<User, UserDTO> userDTOConverter) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userDTOConverter = userDTOConverter;
+    }
+
+    @Override
+    @Transactional
+    public User create(UserDTO userDTO) {
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new NotUniqueException("User with email " + userDTO.getEmail() + " already exists");
+        }
+
+        User user = userDTOConverter.convertToEntity(userDTO);
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        return userRepository.save(user);
     }
 
     @Override
@@ -46,22 +66,22 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public User update(UUID id, UserDTO userDTO, LocalDateTime version) {
+    public User update(UUID id, NewUserDTO newUserDTO, LocalDateTime version) {
         Optional<User> optionalPerson = userRepository.findById(id);
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
-        if (!existingUser.getVersion().equals(version)) {
+        if (!existingUser.getDtUpdate().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        if (!existingUser.getEmail().equals(userDTO.getEmail()) && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-            throw new NotUniqueException("User with email " + userDTO.getEmail() + " already exists");
+        if (!existingUser.getEmail().equals(newUserDTO.getEmail()) && userRepository.findByEmail(newUserDTO.getEmail()).isPresent()) {
+            throw new NotUniqueException("User with email " + newUserDTO.getEmail() + " already exists");
         }
 
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        existingUser.setUsername(newUserDTO.getUsername());
+        existingUser.setEmail(newUserDTO.getEmail());
+        existingUser.setPassword(passwordEncoder.encode(newUserDTO.getPassword()));
 
         return userRepository.save(existingUser);
     }
@@ -73,15 +93,29 @@ public class UserService implements IUserService {
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
-        if (!existingUser.getVersion().equals(version)) {
+        if (!existingUser.getDtUpdate().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        if (existingUser.getRole() == Role.ROLE_ADMIN && role == Role.ROLE_USER) {
-            throw new ValidationException("Cannot downgrade admin user");
+        existingUser.setRole(role);
+
+        userRepository.save(existingUser);
+
+        return existingUser;
+    }
+
+    @Override
+    @Transactional
+    public User updateStatus(UUID id, Status status, LocalDateTime version) {
+        Optional<User> optionalPerson = userRepository.findById(id);
+
+        User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
+
+        if (!existingUser.getDtUpdate().equals(version)) {
+            throw new WrongVersionException("User with id " + id + " has been updated");
         }
 
-        existingUser.setRole(role);
+        existingUser.setStatus(status);
 
         userRepository.save(existingUser);
 
@@ -95,7 +129,7 @@ public class UserService implements IUserService {
 
         User existingUser = optionalPerson.orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
 
-        if (!existingUser.getVersion().equals(version)) {
+        if (!existingUser.getDtUpdate().equals(version)) {
             throw new WrongVersionException("User with id " + id + " has been updated");
         }
 

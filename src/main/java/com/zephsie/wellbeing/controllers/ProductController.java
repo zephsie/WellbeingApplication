@@ -5,7 +5,7 @@ import com.zephsie.wellbeing.dtos.ProductDTO;
 import com.zephsie.wellbeing.models.entity.Product;
 import com.zephsie.wellbeing.security.UserDetailsImp;
 import com.zephsie.wellbeing.services.api.IProductService;
-import com.zephsie.wellbeing.utils.converters.ErrorsToMapConverter;
+import com.zephsie.wellbeing.utils.converters.FieldErrorsToMapConverter;
 import com.zephsie.wellbeing.utils.converters.UnixTimeToLocalDateTimeConverter;
 import com.zephsie.wellbeing.utils.exceptions.BasicFieldValidationException;
 import com.zephsie.wellbeing.utils.exceptions.IllegalPaginationValuesException;
@@ -30,16 +30,16 @@ public class ProductController {
 
     private final UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter;
 
-    private final ErrorsToMapConverter errorsToMapConverter;
+    private final FieldErrorsToMapConverter fieldErrorsToMapConverter;
 
     @Autowired
     public ProductController(IProductService productService,
                              UnixTimeToLocalDateTimeConverter unixTimeToLocalDateTimeConverter,
-                             ErrorsToMapConverter errorsToMapConverter) {
+                             FieldErrorsToMapConverter fieldErrorsToMapConverter) {
 
         this.productService = productService;
         this.unixTimeToLocalDateTimeConverter = unixTimeToLocalDateTimeConverter;
-        this.errorsToMapConverter = errorsToMapConverter;
+        this.fieldErrorsToMapConverter = fieldErrorsToMapConverter;
     }
 
     @JsonView(EntityView.System.class)
@@ -58,7 +58,7 @@ public class ProductController {
                                           @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productDTO, userDetails.getUser()));
@@ -85,7 +85,7 @@ public class ProductController {
                                           @AuthenticationPrincipal UserDetailsImp userDetails) {
 
         if (bindingResult.hasErrors()) {
-            throw new BasicFieldValidationException(errorsToMapConverter.map(bindingResult));
+            throw new BasicFieldValidationException(fieldErrorsToMapConverter.map(bindingResult));
         }
 
         return ResponseEntity.ok(productService.update(id, productDTO,
